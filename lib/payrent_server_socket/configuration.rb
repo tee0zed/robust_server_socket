@@ -15,7 +15,9 @@ module PayrentServerSocket
         configuration.private_key.is_a?(String) &&
         !configuration.private_key.length.zero? &&
         configuration.token_expiration_time.is_a?(Integer) &&
-        configuration.token_expiration_time.positive?
+        configuration.token_expiration_time.positive? &&
+        configuration.redis_url.is_a?(String) &&
+        !configuration.redis_url.length.zero?
     end
 
     def configured?
@@ -24,6 +26,6 @@ module PayrentServerSocket
   end
 
   class ConfigStore
-    attr_accessor :allowed_services, :private_key, :token_expiration_time
+    attr_accessor :allowed_services, :private_key, :token_expiration_time, :redis_url, :redis_pass
   end
 end
