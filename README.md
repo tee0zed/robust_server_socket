@@ -2,6 +2,14 @@
 
 Gem for in-service Authorization for using with PayrentClientSocket
 
+## Security
+
+- RSA-2048 key pair is used for authorization.
+- Authorized client names are stored in token and config
+- Token is staleable
+- Token if one-time use only
+- Blacklist for tokens in redis
+
 ## Usage
 
 'config/initializers/payrent_server_socket.rb'
@@ -19,6 +27,8 @@ PayrentServerSocket.configure do |c|
   #           public_key: '-----BEGIN PUBLIC KEY-----[...]'
   #   },
   # we should add 'core' to allowed_services
+  c.redis_url = 'redis://localhost:6379' # redis url for storing tokens
+  c.redis_pass = 'password' # redis password
 end
   
 PayrentServerSocket.load!
