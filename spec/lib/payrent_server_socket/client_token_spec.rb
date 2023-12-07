@@ -3,7 +3,7 @@ require './lib/payrent_server_socket/client_token'
 require './lib/payrent_server_socket/secure_token/simple_cacher'
 
 RSpec.describe PayrentServerSocket::ClientToken do
-  subject(:perform) { described_class.call(params) }
+  subject(:perform) { described_class.validate!(params) }
 
   let(:params) { { token: token } }
   let(:token) { 'client_10000' }

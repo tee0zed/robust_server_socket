@@ -2,7 +2,7 @@ module PayrentServerSocket
   class ClientToken
     attr_reader :client
 
-    def self.call(secure_token)
+    def self.validate!(secure_token)
       new(secure_token).tap { |instance| instance.valid? }
     end
 
@@ -15,8 +15,9 @@ module PayrentServerSocket
       raise UnauthorizedClient unless client
       raise UsedToken if token_used?
 
-      log_token_usage
-      token_valid?
+      validity = token_valid?
+      log_token_usage if validity
+      validity
     end
 
     def client
