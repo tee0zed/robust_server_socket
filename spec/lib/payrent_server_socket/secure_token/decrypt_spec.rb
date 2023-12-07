@@ -22,8 +22,8 @@ RSpec.describe PayrentServerSocket::SecureToken::Decrypt do
       expect(decrypted_text).to eq(original_text)
     end
 
-    it 'raises an error when decryption fails' do
-      expect { described_class.call(fake_token) }.to raise_error(PayrentServerSocket::SecureToken::InvalidToken)
+    it 'returns nil when decryption fails' do
+      expect(described_class.call(fake_token)).to be nil
     end
   end
 

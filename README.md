@@ -48,5 +48,6 @@ PayrentServerSocket::ClientToken.validate!(token) # shortcut for token.valid? an
 `PayrentServerSocket::ClientToken::UnauthorizedClient` - client is not allowed to use this service you should add it to allowed_services
 `PayrentServerSocket::ClientToken::UsedToken` - token is already used
 `PayrentServerSocket::ClientToken::StaleToken` - token is stale over the expiration time
+`PayrentServerSocket::ClientToken::InvalidToken` - token decryption failed
 
 
