@@ -3,7 +3,11 @@ module PayrentServerSocket
     attr_reader :client
 
     def self.validate!(secure_token)
-      new(secure_token).tap { |instance| instance.valid? }
+      new(secure_token).tap do |instance|
+        raise StaleToken unless instance.token_not_expired?
+        raise UnauthorizedClient unless instance.client
+        raise UsedToken if instance.token_used?
+      end
     end
 
     def initialize(secure_token)
@@ -12,16 +16,19 @@ module PayrentServerSocket
     end
 
     def valid?
-      raise UnauthorizedClient unless client
-      raise UsedToken if token_used?
-
-      validity = token_not_expired?
-      log_token_usage if validity
-      validity
+      client && !token_used? && token_not_expired?
     end
 
     def client
       @client ||= PayrentServerSocket.configuration.allowed_services.detect { _1.eql?(client_token.chomp.strip) }
+    end
+
+    def token_not_expired?
+      token_expiration_time > Time.now.utc.to_i - timestamp
+    end
+
+    def token_used?
+      !!SecureToken::SimpleCacher.get(decrypted_token)
     end
 
     private
@@ -34,16 +41,8 @@ module PayrentServerSocket
       splitted_token.last.to_i
     end
 
-    def token_used?
-      !!SecureToken::SimpleCacher.get(decrypted_token)
-    end
-
     def log_token_usage
       SecureToken::SimpleCacher.set(decrypted_token, true)
-    end
-
-    def token_not_expired?
-      token_expiration_time > Time.now.utc.to_i - timestamp
     end
 
     def client_token
@@ -60,5 +59,6 @@ module PayrentServerSocket
 
     UnauthorizedClient = Class.new(StandardError)
     UsedToken = Class.new(StandardError)
+    StaleToken = Class.new(StandardError)
   end
 end

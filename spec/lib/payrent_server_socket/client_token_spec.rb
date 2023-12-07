@@ -16,13 +16,10 @@ RSpec.describe PayrentServerSocket::ClientToken do
 
     allow(PayrentServerSocket).to receive(:configuration).and_return(configuration)
     stub_const('::PayrentServerSocket::SecureToken::Decrypt', double(call: token))
+    allow(Time).to receive_message_chain(:now, :utc, :to_i).and_return(10010) # 10 seconds after token creation
   end
 
-  context 'when client exists' do
-    before do
-      allow(Time).to receive_message_chain(:now, :utc, :to_i).and_return(10010) # 10 seconds after token creation
-    end
-
+  context 'when token valid' do
     it 'returns client' do
       expect(perform.valid?).to be true
       expect(perform.client).to eq(client)
@@ -53,8 +50,7 @@ RSpec.describe PayrentServerSocket::ClientToken do
     end
 
     it 'returns valid false' do
-      expect(perform.valid?).to be false
-      expect(perform.client).to eq(client)
+      expect { perform }.to raise_error(::PayrentServerSocket::ClientToken::StaleToken)
     end
   end
 
