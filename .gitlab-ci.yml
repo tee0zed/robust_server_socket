@@ -9,5 +9,5 @@ tests:
   script:
     - bundle exec rspec
   tags:
-    - paycos
+    - payrentpro
 
