@@ -30,7 +30,7 @@ module PayrentServerSocket
     end
 
     def timestamp
-      decrypted_token.split('_').last.to_i
+      splitted_token.last.to_i
     end
 
     def token_used?
@@ -46,7 +46,11 @@ module PayrentServerSocket
     end
 
     def client_token
-      decrypted_token.split('_').first
+      splitted_token.first
+    end
+
+    def splitted_token
+      @splitted_token ||= decrypted_token.match(/(.*?)_(\d+)\z/).captures
     end
 
     def token_expiration_time
