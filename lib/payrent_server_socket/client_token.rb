@@ -15,7 +15,7 @@ module PayrentServerSocket
       raise UnauthorizedClient unless client
       raise UsedToken if token_used?
 
-      validity = token_valid?
+      validity = token_not_expired?
       log_token_usage if validity
       validity
     end
@@ -42,8 +42,8 @@ module PayrentServerSocket
       SecureToken::SimpleCacher.set(decrypted_token, true)
     end
 
-    def token_valid?
-      @token_expired ||= token_expiration_time > Time.now.utc.to_i - timestamp
+    def token_not_expired?
+      token_expiration_time > Time.now.utc.to_i - timestamp
     end
 
     def client_token
