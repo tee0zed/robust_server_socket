@@ -11,6 +11,7 @@ module PayrentServerSocket
     require 'openssl'
     require 'base64'
 
+    require 'payrent_server_socket/secure_token/simple_cacher'
     require 'payrent_server_socket/secure_token/decrypt'
     require 'payrent_server_socket/client_token'
   end
