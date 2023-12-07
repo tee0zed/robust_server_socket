@@ -17,7 +17,5 @@ module PayrentServerSocket
         OpenSSL::PKey::RSA.new(PayrentServerSocket.configuration.private_key)
       end
     end
-
-    InvalidToken = Class.new(StandardError)
   end
 end
