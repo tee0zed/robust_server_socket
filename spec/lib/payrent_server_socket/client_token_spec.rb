@@ -56,11 +56,11 @@ RSpec.describe PayrentServerSocket::ClientToken do
 
   context 'when token is invalid' do
     before do
-      allow(::PayrentServerSocket::SecureToken::Decrypt).to receive(:call).and_raise(::PayrentServerSocket::SecureToken::InvalidToken)
+      allow(::PayrentServerSocket::SecureToken::Decrypt).to receive(:call).and_return(nil)
     end
 
     it 'raises an error' do
-      expect { perform }.to raise_error(::PayrentServerSocket::SecureToken::InvalidToken)
+      expect { perform }.to raise_error(::PayrentServerSocket::ClientToken::InvalidToken)
     end
   end
 end

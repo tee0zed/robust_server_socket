@@ -1,7 +1,5 @@
 module PayrentServerSocket
   class ClientToken
-    attr_reader :client
-
     def self.validate!(secure_token)
       new(secure_token).tap do |instance|
         raise InvalidToken unless instance.decrypted_token
@@ -24,7 +22,7 @@ module PayrentServerSocket
     end
 
     def client
-      @client ||= PayrentServerSocket.configuration.allowed_services.detect { _1.eql?(client_token.chomp.strip) }
+      @client ||= decrypted_token && PayrentServerSocket.configuration.allowed_services.detect { _1.eql?(client_token.strip) }
     end
 
     def token_not_expired?
@@ -42,7 +40,7 @@ module PayrentServerSocket
     private
 
     def timestamp
-      splitted_token.last.to_i
+      split_token.last.to_i
     end
 
     def log_token_usage
@@ -50,11 +48,11 @@ module PayrentServerSocket
     end
 
     def client_token
-      splitted_token.first
+      split_token.first
     end
 
-    def splitted_token
-      @splitted_token ||= decrypted_token.match(/(.*?)_(\d+)\z/).captures
+    def split_token
+      @split_token ||= decrypted_token.match(/(.*?)_(\d+)\z/).captures
     end
 
     def token_expiration_time
