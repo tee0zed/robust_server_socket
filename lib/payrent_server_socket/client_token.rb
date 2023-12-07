@@ -17,9 +17,9 @@ module PayrentServerSocket
     end
 
     def valid?
-      decrypted_token &&
-        client        &&
-        !token_used?  &&
+      !!decrypted_token &&
+        !!client        &&
+        !token_used?    &&
         token_not_expired?
     end
 
