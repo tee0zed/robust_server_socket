@@ -41,11 +41,12 @@ token = PayrentServerSocket::ClientToken.new(token) # token - is a Bearer from s
 token.valid? #Boolean  check if token is not expired and client is allowed to use this service, main authorization check
 token.client #String  name of the client
 
-PayrentServerSocket::ClientToken.validate!(token) # shortcut for token.valid?
+PayrentServerSocket::ClientToken.validate!(token) # shortcut for token.valid? and raises specific errors
 ```
 ## Errors
 
 `PayrentServerSocket::ClientToken::UnauthorizedClient` - client is not allowed to use this service you should add it to allowed_services
 `PayrentServerSocket::ClientToken::UsedToken` - token is already used
+`PayrentServerSocket::ClientToken::StaleToken` - token is stale over the expiration time
 
 
