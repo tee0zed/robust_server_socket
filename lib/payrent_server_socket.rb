@@ -1,6 +1,4 @@
 # frozen_string_literal: true
-
-require 'version'
 require 'payrent_server_socket/configuration'
 
 module PayrentServerSocket
