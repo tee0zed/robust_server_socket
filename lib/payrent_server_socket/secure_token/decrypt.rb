@@ -7,8 +7,8 @@ module PayrentServerSocket
 
       def call(token)
         private_key.private_decrypt(Base64.strict_decode64(token))
-      rescue OpenSSL::PKey::RSAError
-        nil
+      rescue OpenSSL::PKey::RSAError => e
+        raise InvalidToken, e.message
       end
 
       private
@@ -17,5 +17,7 @@ module PayrentServerSocket
         OpenSSL::PKey::RSA.new(PayrentServerSocket.configuration.private_key)
       end
     end
+
+    InvalidToken = Class.new(StandardError)
   end
 end

@@ -18,8 +18,8 @@ module PayrentServerSocket
       private
 
       def redis
-        @redis ||= ConnectionPool.new(pool_config) do
-          Redis.new(redis_config)
+        @redis ||= ::ConnectionPool.new(pool_config) do
+          ::Redis.new(redis_config)
         end
       end
 

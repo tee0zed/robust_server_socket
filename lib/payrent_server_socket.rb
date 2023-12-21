@@ -10,6 +10,8 @@ module PayrentServerSocket
 
     require 'openssl'
     require 'base64'
+    require 'redis'
+    require 'connection_pool'
 
     require 'payrent_server_socket/secure_token/simple_cacher'
     require 'payrent_server_socket/secure_token/decrypt'

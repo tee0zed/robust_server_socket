@@ -19,10 +19,12 @@ module PayrentServerSocket
         !!client        &&
         !token_used?    &&
         token_not_expired?
+    rescue SecureToken::InvalidToken
+      false
     end
 
     def client
-      @client ||= decrypted_token && PayrentServerSocket.configuration.allowed_services.detect { _1.eql?(client_token.strip) }
+      @client ||= allowed_clients.detect { _1.eql?(client_name.strip) }
     end
 
     def token_not_expired?
@@ -39,6 +41,10 @@ module PayrentServerSocket
 
     private
 
+    def allowed_clients
+      PayrentServerSocket.configuration.allowed_services
+    end
+
     def timestamp
       split_token.last.to_i
     end
@@ -47,7 +53,7 @@ module PayrentServerSocket
       SecureToken::SimpleCacher.set(decrypted_token, true)
     end
 
-    def client_token
+    def client_name
       split_token.first
     end
 
