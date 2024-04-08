@@ -1,21 +1,14 @@
 require 'spec_helper'
-require 'base64'
-require 'openssl'
 require './lib/payrent_server_socket/secure_token/decrypt.rb'
 
-RSpec.describe PayrentServerSocket::SecureToken::Decrypt do
-  let(:configuration) { instance_double(PayrentServerSocket::ConfigStore, private_key: private_key) }
-  let(:private_key) { OpenSSL::PKey::RSA.generate(2048) }
-
-  before do
-    allow(PayrentServerSocket).to receive(:configuration).and_return(configuration)
-  end
+RSpec.describe PayrentServerSocket::SecureToken::Decrypt, stub_configuration: true do
+  include_context :configuration
 
   describe '.call' do
     let(:public_key) { private_key.public_key }
     let(:original_text) { "Hello, world!" }
     let(:encrypted_token) { Base64.strict_encode64(public_key.public_encrypt(original_text)) }
-    let(:fake_token) { Base64.strict_encode64("Fake Token") }
+    let(:fake_token) { "Fake Token" }
 
     it 'decrypts a token correctly' do
       decrypted_text = described_class.call(encrypted_token)
