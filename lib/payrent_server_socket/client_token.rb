@@ -1,5 +1,10 @@
 module PayrentServerSocket
   class ClientToken
+    InvalidToken = Class.new(StandardError)
+    UnauthorizedClient = Class.new(StandardError)
+    UsedToken = Class.new(StandardError)
+    StaleToken = Class.new(StandardError)
+
     def self.validate!(secure_token)
       new(secure_token).tap do |instance|
         raise InvalidToken unless instance.decrypted_token
@@ -64,10 +69,5 @@ module PayrentServerSocket
     def token_expiration_time
       PayrentServerSocket.configuration.token_expiration_time || 60
     end
-
-    InvalidToken = Class.new(StandardError)
-    UnauthorizedClient = Class.new(StandardError)
-    UsedToken = Class.new(StandardError)
-    StaleToken = Class.new(StandardError)
   end
 end

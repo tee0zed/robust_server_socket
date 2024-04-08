@@ -1,7 +1,9 @@
 require 'spec_helper'
 require './lib/payrent_server_socket/configuration.rb'
 
-RSpec.describe PayrentServerSocket::Configuration do
+RSpec.describe PayrentServerSocket::Configuration, unstub_configuration: true do
+  include_context :configuration
+
   let(:dummy_class) { Class.new { extend PayrentServerSocket::Configuration } }
 
   describe '#configure' do
@@ -34,8 +36,6 @@ RSpec.describe PayrentServerSocket::Configuration do
     end
 
     it 'returns true if configured' do
-      require 'openssl'
-
       dummy_class.configure do |c|
         c.allowed_services = ['client']
         c.token_expiration_time = 60
@@ -52,12 +52,12 @@ end
 RSpec.describe PayrentServerSocket::ConfigStore do
   subject(:config_store) { described_class.new }
 
-  it 'has attribute payguard_redis_url' do
+  it 'has attribute allowed_services' do
     config_store.allowed_services = ['first', 'second']
     expect(config_store.allowed_services).to eq ['first', 'second']
   end
 
-  it 'has attribute payguard_public_key' do
+  it 'has attribute private_key' do
     config_store.private_key = 'private_key'
     expect(config_store.private_key).to eq('private_key')
   end

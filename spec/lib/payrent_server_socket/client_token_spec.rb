@@ -2,19 +2,18 @@ require 'spec_helper'
 require './lib/payrent_server_socket/client_token'
 require './lib/payrent_server_socket/secure_token/simple_cacher'
 
-RSpec.describe PayrentServerSocket::ClientToken do
+RSpec.describe PayrentServerSocket::ClientToken, unstub_configuration: false do
+  include_context :configuration
+
   subject(:perform) { described_class.validate!(params) }
 
   let(:params) { { token: token } }
-  let(:token) { 'client_10000' }
-  let(:client) { 'client' }
-  let(:configuration) { double(token_expiration_time: 60, allowed_services: [client]) }
+  let(:token) { "#{client}_10000" }
 
   before do
     allow(PayrentServerSocket::SecureToken::SimpleCacher).to receive(:get).and_return(nil)
     allow(PayrentServerSocket::SecureToken::SimpleCacher).to receive(:set).and_return('OK')
 
-    allow(PayrentServerSocket).to receive(:configuration).and_return(configuration)
     stub_const('::PayrentServerSocket::SecureToken::Decrypt', double(call: token))
     allow(Time).to receive_message_chain(:now, :utc, :to_i).and_return(10010) # 10 seconds after token creation
   end
@@ -27,7 +26,7 @@ RSpec.describe PayrentServerSocket::ClientToken do
   end
 
   context 'when client does not exist' do
-    let(:client) { nil }
+    let(:token) { "whatevs_10000" }
 
     it 'raises' do
       expect { perform }.to raise_error(::PayrentServerSocket::ClientToken::UnauthorizedClient)
