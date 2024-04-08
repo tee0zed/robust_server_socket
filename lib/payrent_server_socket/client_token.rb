@@ -42,7 +42,7 @@ module PayrentServerSocket
     private
 
     def allowed_clients
-      PayrentServerSocket.configuration.allowed_services
+      PayrentServerSocket.configuration.allowed_services.map(&:strip)
     end
 
     def timestamp
