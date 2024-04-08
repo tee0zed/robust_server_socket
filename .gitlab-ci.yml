@@ -1,13 +1,19 @@
-default:
-  image: ruby:3.2.2
+image: ruby:3.2.2
 
-  before_script:
-    - gem install bundler -v 2.4.22
-    - bundle install
+stages:
+  - test
 
-tests:
+test:rspec:
+  variables:
+    BUNDLER_VERSION: 2.4.22
+  stage: test
   script:
-    - bundle exec rspec
-  tags:
-    - payrentpro
-
+    - gem install bundler -v ${BUNDLER_VERSION}
+    - bundle install --jobs $(nproc) --retry 3
+    - bundle exec rspec --format progress --format RspecJunitFormatter --out rspec.xml
+  artifacts:
+    when: always
+    paths:
+      - rspec.xml
+    reports:
+      junit: rspec.xml
