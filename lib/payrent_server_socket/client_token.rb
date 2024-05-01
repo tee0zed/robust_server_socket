@@ -37,7 +37,11 @@ module PayrentServerSocket
     end
 
     def token_used?
-      !!SecureToken::SimpleCacher.get(decrypted_token)
+      usage_count > 0
+    end
+
+    def usage_count
+      SecureToken::SimpleCacher.get(decrypted_token).to_i
     end
 
     def decrypted_token
@@ -55,7 +59,7 @@ module PayrentServerSocket
     end
 
     def log_token_usage
-      SecureToken::SimpleCacher.set(decrypted_token, true)
+      SecureToken::SimpleCacher.incr(decrypted_token)
     end
 
     def client_name

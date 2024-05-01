@@ -3,9 +3,9 @@ module PayrentServerSocket
     module SimpleCacher
       class << self
 
-        def set(key, value)
+        def incr(key)
           redis.with do |conn|
-            conn.set(key, value, ex: (@te ||= PayrentServerSocket.configuration.token_expiration_time))
+            conn.incrby(key, 1)
           end
         end
 

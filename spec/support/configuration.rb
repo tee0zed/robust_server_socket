@@ -2,6 +2,7 @@ require './lib/payrent_server_socket/'
 
 RSpec.shared_context :configuration do
   let(:client) { 'client' }
+  let(:message) { 'message' }
   let(:private_key) { OpenSSL::PKey::RSA.generate(2048) }
   let(:configuration) do
     instance_double(
