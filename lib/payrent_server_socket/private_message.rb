@@ -1,3 +1,6 @@
+require_relative 'secure_token/simple_cacher'
+require_relative 'secure_token/decrypt'
+
 module PayrentServerSocket
   class PrivateMessage
     InvalidMessage = Class.new(StandardError)
