@@ -1,13 +1,13 @@
 require 'spec_helper'
-require './lib/payrent_server_socket/client_token'
+require './lib/payrent_server_socket/private_message'
 require './lib/payrent_server_socket/secure_token/simple_cacher'
 
-RSpec.describe PayrentServerSocket::ClientToken, stub_configuration: true do
+RSpec.describe PayrentServerSocket::PrivateMessage, stub_configuration: true do
   include_context :configuration
 
   subject(:perform) { described_class.validate!(token) }
 
-  let(:token) { Base64.strict_encode64(private_key.public_encrypt ("#{client}_10000")) }
+  let(:token) { Base64.strict_encode64(private_key.public_encrypt ("#{message}_10000")) }
 
   before do
     allow(PayrentServerSocket::SecureToken::SimpleCacher).to receive(:get).and_return(nil)
@@ -19,25 +19,8 @@ RSpec.describe PayrentServerSocket::ClientToken, stub_configuration: true do
   context 'when token valid' do
     it 'returns client' do
       expect(perform.valid?).to be true
-      expect(perform.client).to eq(client)
-    end
-  end
-
-  context 'when client does not exist' do
-    let(:token) { Base64.strict_encode64(private_key.public_encrypt ("whatevs_10000")) }
-
-    it 'raises' do
-      expect { perform }.to raise_error(::PayrentServerSocket::ClientToken::UnauthorizedClient)
-    end
-  end
-
-  context 'when token used' do
-    before do
-      allow(PayrentServerSocket::SecureToken::SimpleCacher).to receive(:get).and_return(1)
-    end
-
-    it 'raises' do
-      expect { perform }.to raise_error(::PayrentServerSocket::ClientToken::UsedToken)
+      expect(perform.message).to eq(message)
+      expect(perform.timestamp).to eq(10000)
     end
   end
 
@@ -47,7 +30,7 @@ RSpec.describe PayrentServerSocket::ClientToken, stub_configuration: true do
     end
 
     it 'returns valid false' do
-      expect { perform }.to raise_error(::PayrentServerSocket::ClientToken::StaleToken)
+      expect { perform }.to raise_error(::PayrentServerSocket::PrivateMessage::StaleMessage)
     end
   end
 
@@ -57,7 +40,7 @@ RSpec.describe PayrentServerSocket::ClientToken, stub_configuration: true do
     end
 
     it 'raises an error' do
-      expect { perform }.to raise_error(::PayrentServerSocket::ClientToken::InvalidToken)
+      expect { perform }.to raise_error(::PayrentServerSocket::PrivateMessage::InvalidMessage)
     end
   end
 end

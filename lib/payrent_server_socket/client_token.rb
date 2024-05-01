@@ -1,5 +1,10 @@
 module PayrentServerSocket
   class ClientToken
+    InvalidToken = Class.new(StandardError)
+    UnauthorizedClient = Class.new(StandardError)
+    UsedToken = Class.new(StandardError)
+    StaleToken = Class.new(StandardError)
+
     def self.validate!(secure_token)
       new(secure_token).tap do |instance|
         raise InvalidToken unless instance.decrypted_token
@@ -32,7 +37,11 @@ module PayrentServerSocket
     end
 
     def token_used?
-      !!SecureToken::SimpleCacher.get(decrypted_token)
+      usage_count > 0
+    end
+
+    def usage_count
+      SecureToken::SimpleCacher.get(decrypted_token).to_i
     end
 
     def decrypted_token
@@ -42,7 +51,7 @@ module PayrentServerSocket
     private
 
     def allowed_clients
-      PayrentServerSocket.configuration.allowed_services
+      PayrentServerSocket.configuration.allowed_services.map(&:strip)
     end
 
     def timestamp
@@ -50,7 +59,7 @@ module PayrentServerSocket
     end
 
     def log_token_usage
-      SecureToken::SimpleCacher.set(decrypted_token, true)
+      SecureToken::SimpleCacher.incr(decrypted_token)
     end
 
     def client_name
@@ -64,10 +73,5 @@ module PayrentServerSocket
     def token_expiration_time
       PayrentServerSocket.configuration.token_expiration_time || 60
     end
-
-    InvalidToken = Class.new(StandardError)
-    UnauthorizedClient = Class.new(StandardError)
-    UsedToken = Class.new(StandardError)
-    StaleToken = Class.new(StandardError)
   end
 end

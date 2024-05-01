@@ -13,4 +13,5 @@ gem 'connection_pool'
 group :development, :test do
   gem 'rspec'
   gem 'pry'
+  gem 'rspec_junit_formatter'
 end
