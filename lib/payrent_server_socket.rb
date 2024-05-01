@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require 'payrent_server_socket/configuration'
+require_relative 'payrent_server_socket/configuration'
 
 module PayrentServerSocket
   extend PayrentServerSocket::Configuration
@@ -13,7 +13,7 @@ module PayrentServerSocket
     require 'redis'
     require 'connection_pool'
 
-    autoload :ClientToken, 'payrent_server_socket/client_token'
-    autoload :PrivateMessage, 'payrent_server_socket/private_message'
+    require_relative 'payrent_server_socket/client_token'
+    require_relative 'payrent_server_socket/private_message'
   end
 end
