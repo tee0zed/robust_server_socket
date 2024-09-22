@@ -1,12 +1,14 @@
 # frozen_string_literal: true
+
 require_relative 'payrent_server_socket/configuration'
 
 module PayrentServerSocket
   extend PayrentServerSocket::Configuration
-  extend self
+
+  module_function
 
   def load!
-    raise "You must correctly configure PayrentServerSocket first!" unless configured?
+    raise 'You must correctly configure PayrentServerSocket first!' unless configured?
 
     require 'openssl'
     require 'base64'

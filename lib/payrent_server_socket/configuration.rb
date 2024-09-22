@@ -9,15 +9,15 @@ module PayrentServerSocket
       @configured = true
     end
 
-    def correct_configuration?
+    def correct_configuration? # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity
       configuration.allowed_services.is_a?(Array) &&
         configuration.allowed_services.any? &&
         configuration.private_key.is_a?(String) &&
-        !configuration.private_key.length.zero? &&
+        !configuration.private_key.empty? &&
         configuration.token_expiration_time.is_a?(Integer) &&
         configuration.token_expiration_time.positive? &&
         configuration.redis_url.is_a?(String) &&
-        !configuration.redis_url.length.zero?
+        !configuration.redis_url.empty?
     end
 
     def configured?

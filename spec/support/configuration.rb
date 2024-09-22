@@ -7,7 +7,7 @@ RSpec.shared_context :configuration do
   let(:configuration) do
     instance_double(
       PayrentServerSocket::ConfigStore,
-      private_key: private_key,
+      private_key:,
       token_expiration_time: 60,
       allowed_services: [client]
     )

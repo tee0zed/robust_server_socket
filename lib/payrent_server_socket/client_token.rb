@@ -23,9 +23,9 @@ module PayrentServerSocket
     end
 
     def valid?
-      !!decrypted_token &&
-        !!client        &&
-        !token_used?    &&
+      !decrypted_token.nil? &&
+        !client.nil?        &&
+        !token_used? &&
         token_not_expired?
     rescue SecureToken::InvalidToken
       false
@@ -40,7 +40,7 @@ module PayrentServerSocket
     end
 
     def token_used?
-      usage_count > 0
+      usage_count.positive?
     end
 
     def usage_count
@@ -48,7 +48,7 @@ module PayrentServerSocket
     end
 
     def decrypted_token
-      @decrypted_token ||= SecureToken::Decrypt.(@secure_token)
+      @decrypted_token ||= SecureToken::Decrypt.call(@secure_token)
     end
 
     private

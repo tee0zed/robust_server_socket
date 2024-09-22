@@ -18,7 +18,7 @@ module PayrentServerSocket
     end
 
     def valid?
-      !!decrypted_message &&
+      !decrypted_message.nil? &&
         message_not_expired?
     rescue SecureToken::InvalidToken
       false
@@ -29,7 +29,7 @@ module PayrentServerSocket
     end
 
     def message_opened?
-      read_count > 0
+      read_count.positive?
     end
 
     def cache_key
@@ -45,7 +45,7 @@ module PayrentServerSocket
     end
 
     def decrypted_message
-      @decrypted_message ||= SecureToken::Decrypt.(@secure_message)
+      @decrypted_message ||= SecureToken::Decrypt.call(@secure_message)
     end
 
     def timestamp

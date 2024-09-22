@@ -1,7 +1,7 @@
 require 'spec_helper'
-require './lib/payrent_server_socket/configuration.rb'
+require './lib/payrent_server_socket/configuration'
 
-RSpec.describe PayrentServerSocket::Configuration, stub_configuration: false do
+RSpec.describe PayrentServerSocket::Configuration, stub_configuration: false do # rubocop:disable RSpec/MultipleDescribes
   include_context :configuration
 
   let(:dummy_class) { Class.new { extend PayrentServerSocket::Configuration } }
@@ -20,19 +20,19 @@ RSpec.describe PayrentServerSocket::Configuration, stub_configuration: false do
     end
 
     it 'returns false if not configured' do
-      expect(dummy_class.configured?).to eq(false)
+      expect(dummy_class.configured?).to be(false)
     end
 
     it 'returns true if configured' do
-      dummy_class.configure { |config| }
-      expect(dummy_class.configured?).to eq(true)
+      dummy_class.configure { |config| } # rubocop:disable Lint/EmptyBlock
+      expect(dummy_class.configured?).to be(true)
     end
   end
 
   describe '#correct_configuration?' do
     it 'returns false if not configured' do
-      dummy_class.configure { |config| }
-      expect(dummy_class.correct_configuration?).to eq(false)
+      dummy_class.configure { |config| } # rubocop:disable Lint/EmptyBlock
+      expect(dummy_class.correct_configuration?).to be(false)
     end
 
     it 'returns true if configured' do
@@ -44,7 +44,7 @@ RSpec.describe PayrentServerSocket::Configuration, stub_configuration: false do
         c.private_key = OpenSSL::PKey::RSA.generate(2048).to_pem
       end
 
-      expect(dummy_class.correct_configuration?).to eq(true)
+      expect(dummy_class.correct_configuration?).to be(true)
     end
   end
 end
@@ -53,8 +53,8 @@ RSpec.describe PayrentServerSocket::ConfigStore do
   subject(:config_store) { described_class.new }
 
   it 'has attribute allowed_services' do
-    config_store.allowed_services = ['first', 'second']
-    expect(config_store.allowed_services).to eq ['first', 'second']
+    config_store.allowed_services = %w[first second]
+    expect(config_store.allowed_services).to eq %w[first second]
   end
 
   it 'has attribute private_key' do

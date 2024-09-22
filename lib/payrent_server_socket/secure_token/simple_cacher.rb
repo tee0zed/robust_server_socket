@@ -2,7 +2,6 @@ module PayrentServerSocket
   module SecureToken
     module SimpleCacher
       class << self
-
         def incr(key)
           redis.with do |conn|
             conn.incrby(key, 1)
