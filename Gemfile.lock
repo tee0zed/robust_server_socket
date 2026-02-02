@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    payrent_server_socket (0.1.0)
+    robust_server_socket (0.1.0)
       hiredis
       rake
       redis
@@ -45,7 +45,7 @@ PLATFORMS
 DEPENDENCIES
   connection_pool
   hiredis
-  payrent_server_socket!
+  robust_server_socket!
   pry
   rake (~> 13.0)
   redis

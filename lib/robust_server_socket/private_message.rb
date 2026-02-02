@@ -1,7 +1,7 @@
 require_relative 'secure_token/simple_cacher'
 require_relative 'secure_token/decrypt'
 
-module PayrentServerSocket
+module RobustServerSocket
   class PrivateMessage
     InvalidMessage = Class.new(StandardError)
     StaleMessage = Class.new(StandardError)
@@ -63,7 +63,7 @@ module PayrentServerSocket
     end
 
     def message_expiration_time
-      PayrentServerSocket.configuration.token_expiration_time || 60
+      RobustServerSocket.configuration.token_expiration_time || 60
     end
   end
 end

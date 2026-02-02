@@ -1,4 +1,4 @@
-require './lib/payrent_server_socket/'
+require './lib/robust_server_socket/'
 
 RSpec.shared_context :configuration do
   let(:client) { 'client' }
@@ -6,7 +6,7 @@ RSpec.shared_context :configuration do
   let(:private_key) { OpenSSL::PKey::RSA.generate(2048) }
   let(:configuration) do
     instance_double(
-      PayrentServerSocket::ConfigStore,
+      RobustServerSocket::ConfigStore,
       private_key:,
       token_expiration_time: 60,
       allowed_services: [client]
@@ -16,14 +16,14 @@ end
 
 RSpec.configure do |config|
   config.before stub_configuration: true do
-    allow(PayrentServerSocket).to receive(:configuration).and_return(configuration)
+    allow(RobustServerSocket).to receive(:configuration).and_return(configuration)
   end
 
   config.before stub_configuration: false do
-    PayrentServerSocket.module_eval do
-      extend PayrentServerSocket::Configuration
+    RobustServerSocket.module_eval do
+      extend RobustServerSocket::Configuration
     end
 
-    allow(PayrentServerSocket).to receive(:configuration).and_call_original
+    allow(RobustServerSocket).to receive(:configuration).and_call_original
   end
 end

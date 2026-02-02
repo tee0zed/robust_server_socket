@@ -1,8 +1,8 @@
 require 'spec_helper'
-require './lib/payrent_server_socket/private_message'
-require './lib/payrent_server_socket/secure_token/simple_cacher'
+require './lib/robust_server_socket/private_message'
+require './lib/robust_server_socket/secure_token/simple_cacher'
 
-RSpec.describe PayrentServerSocket::PrivateMessage, stub_configuration: true do
+RSpec.describe RobustServerSocket::PrivateMessage, stub_configuration: true do
   subject(:perform) { described_class.validate!(token) }
 
   include_context :configuration
@@ -10,7 +10,7 @@ RSpec.describe PayrentServerSocket::PrivateMessage, stub_configuration: true do
   let(:token) { Base64.strict_encode64(private_key.public_encrypt("#{message}_10000")) }
 
   before do
-    allow(PayrentServerSocket::SecureToken::SimpleCacher).to receive_messages(get: nil, incr: 'OK')
+    allow(RobustServerSocket::SecureToken::SimpleCacher).to receive_messages(get: nil, incr: 'OK')
 
     allow(Time).to receive_message_chain(:now, :utc, :to_i).and_return(10_010) # 10 seconds after token creation
   end
@@ -29,17 +29,17 @@ RSpec.describe PayrentServerSocket::PrivateMessage, stub_configuration: true do
     end
 
     it 'returns valid false' do
-      expect { perform }.to raise_error(PayrentServerSocket::PrivateMessage::StaleMessage)
+      expect { perform }.to raise_error(RobustServerSocket::PrivateMessage::StaleMessage)
     end
   end
 
   context 'when token is invalid' do
     before do
-      allow(PayrentServerSocket::SecureToken::Decrypt).to receive(:call).and_return(nil)
+      allow(RobustServerSocket::SecureToken::Decrypt).to receive(:call).and_return(nil)
     end
 
     it 'raises an error' do
-      expect { perform }.to raise_error(PayrentServerSocket::PrivateMessage::InvalidMessage)
+      expect { perform }.to raise_error(RobustServerSocket::PrivateMessage::InvalidMessage)
     end
   end
 end

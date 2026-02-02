@@ -3,13 +3,12 @@
 require "./lib/version"
 
 Gem::Specification.new do |spec|
-  spec.name = "payrent_server_socket"
-  spec.version = PayrentServerSocket::VERSION
+  spec.name = "robust_server_socket"
+  spec.version = RobustServerSocket::VERSION
   spec.authors = ["tee_zed"]
   spec.email = ["tee0zed@gmail.com"]
-
-  spec.description = "Payrent Server Socket"
-  spec.summary = "Payrent Server Socket gem for PayrentPro"
+  spec.description = "Robust Server Socket"
+  spec.summary = "Robust Server Socket gem for RobustPro"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 2.7.0"
 

@@ -1,6 +1,6 @@
 require 'openssl'
 
-module PayrentServerSocket
+module RobustServerSocket
   module SecureToken
     InvalidToken = Class.new(StandardError)
 
@@ -15,7 +15,7 @@ module PayrentServerSocket
         private
 
         def private_key
-          OpenSSL::PKey::RSA.new(PayrentServerSocket.configuration.private_key)
+          OpenSSL::PKey::RSA.new(RobustServerSocket.configuration.private_key)
         end
       end
     end

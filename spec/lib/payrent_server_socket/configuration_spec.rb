@@ -1,15 +1,15 @@
 require 'spec_helper'
-require './lib/payrent_server_socket/configuration'
+require './lib/robust_server_socket/configuration'
 
-RSpec.describe PayrentServerSocket::Configuration, stub_configuration: false do # rubocop:disable RSpec/MultipleDescribes
+RSpec.describe RobustServerSocket::Configuration, stub_configuration: false do # rubocop:disable RSpec/MultipleDescribes
   include_context :configuration
 
-  let(:dummy_class) { Class.new { extend PayrentServerSocket::Configuration } }
+  let(:dummy_class) { Class.new { extend RobustServerSocket::Configuration } }
 
   describe '#configure' do
     it 'yields the configuration object to the block' do
       dummy_class.configure do |config|
-        expect(config).to be_a(PayrentServerSocket::ConfigStore)
+        expect(config).to be_a(RobustServerSocket::ConfigStore)
       end
     end
   end
@@ -49,7 +49,7 @@ RSpec.describe PayrentServerSocket::Configuration, stub_configuration: false do 
   end
 end
 
-RSpec.describe PayrentServerSocket::ConfigStore do
+RSpec.describe RobustServerSocket::ConfigStore do
   subject(:config_store) { described_class.new }
 
   it 'has attribute allowed_services' do

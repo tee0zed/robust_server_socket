@@ -1,4 +1,4 @@
-module PayrentServerSocket
+module RobustServerSocket
   module Configuration
     attr_reader :configuration, :configured
 

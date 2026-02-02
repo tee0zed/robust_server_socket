@@ -1,7 +1,7 @@
 require_relative 'secure_token/simple_cacher'
 require_relative 'secure_token/decrypt'
 
-module PayrentServerSocket
+module RobustServerSocket
   class ClientToken
     InvalidToken = Class.new(StandardError)
     UnauthorizedClient = Class.new(StandardError)
@@ -54,7 +54,7 @@ module PayrentServerSocket
     private
 
     def allowed_clients
-      PayrentServerSocket.configuration.allowed_services.map(&:strip)
+      RobustServerSocket.configuration.allowed_services.map(&:strip)
     end
 
     def timestamp
@@ -74,7 +74,7 @@ module PayrentServerSocket
     end
 
     def token_expiration_time
-      PayrentServerSocket.configuration.token_expiration_time || 60
+      RobustServerSocket.configuration.token_expiration_time || 60
     end
   end
 end

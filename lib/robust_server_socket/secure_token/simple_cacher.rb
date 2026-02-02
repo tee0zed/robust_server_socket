@@ -1,4 +1,4 @@
-module PayrentServerSocket
+module RobustServerSocket
   module SecureToken
     module SimpleCacher
       class << self
@@ -31,8 +31,8 @@ module PayrentServerSocket
 
         def redis_config
           {}.tap do |config|
-            config[:url] = PayrentServerSocket.configuration.redis_url
-            config[:password] = PayrentServerSocket.configuration.redis_pass
+            config[:url] = RobustServerSocket.configuration.redis_url
+            config[:password] = RobustServerSocket.configuration.redis_pass
           end
         end
       end

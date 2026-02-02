@@ -1,7 +1,7 @@
 require 'spec_helper'
-require './lib/payrent_server_socket/secure_token/decrypt'
+require './lib/robust_server_socket/secure_token/decrypt'
 
-RSpec.describe PayrentServerSocket::SecureToken::Decrypt, stub_configuration: true do
+RSpec.describe RobustServerSocket::SecureToken::Decrypt, stub_configuration: true do
   include_context :configuration
 
   describe '.call' do
@@ -16,7 +16,7 @@ RSpec.describe PayrentServerSocket::SecureToken::Decrypt, stub_configuration: tr
     end
 
     it 'returns nil when decryption fails' do
-      expect { described_class.call(fake_token) }.to raise_error(PayrentServerSocket::SecureToken::InvalidToken)
+      expect { described_class.call(fake_token) }.to raise_error(RobustServerSocket::SecureToken::InvalidToken)
     end
   end
 
