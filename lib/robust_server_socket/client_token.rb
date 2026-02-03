@@ -1,4 +1,4 @@
-require_relative 'secure_token/simple_cacher'
+require_relative 'secure_token/cacher'
 require_relative 'secure_token/decrypt'
 
 module RobustServerSocket
@@ -11,22 +11,32 @@ module RobustServerSocket
     def self.validate!(secure_token)
       new(secure_token).tap do |instance|
         raise InvalidToken unless instance.decrypted_token
-        raise StaleToken unless instance.token_not_expired?
         raise UnauthorizedClient unless instance.client
-        raise UsedToken if instance.token_used?
+
+        result = instance.atomic_validate_and_log_token
+
+        case result
+        when 'stale'
+          raise StaleToken
+        when 'used'
+          raise UsedToken
+        when 'ok'
+          true
+        else
+          raise InvalidToken, "Unexpected validation result: #{result}"
+        end
       end
     end
 
     def initialize(secure_token)
-      @secure_token = secure_token
+      @secure_token = validate_secure_token_input(secure_token)
       @client = nil
     end
 
     def valid?
-      !decrypted_token.nil? &&
-        !client.nil?        &&
-        !token_used? &&
-        token_not_expired?
+      decrypted_token &&
+        client &&
+        atomic_validate_and_log_token == 'ok'
     rescue SecureToken::InvalidToken
       false
     end
@@ -39,12 +49,21 @@ module RobustServerSocket
       token_expiration_time > Time.now.utc.to_i - timestamp
     end
 
+    def atomic_validate_and_log_token
+      SecureToken::Cacher.atomic_validate_and_log(
+        decrypted_token,
+        token_expiration_time + 300,
+        timestamp,
+        token_expiration_time
+      )
+    end
+
     def token_used?
       usage_count.positive?
     end
 
     def usage_count
-      SecureToken::SimpleCacher.get(decrypted_token).to_i
+      SecureToken::Cacher.get(decrypted_token).to_i
     end
 
     def decrypted_token
@@ -61,20 +80,29 @@ module RobustServerSocket
       split_token.last.to_i
     end
 
-    def log_token_usage
-      SecureToken::SimpleCacher.incr(decrypted_token)
-    end
-
     def client_name
       split_token.first
     end
 
     def split_token
-      @split_token ||= decrypted_token.match(/(.*?)_(\d+)\z/).captures
+      @split_token ||= begin
+        match_data = decrypted_token.match(/(.*?)_(\d+)\z/)
+        raise InvalidToken, 'Invalid token format' unless match_data
+        match_data.captures
+      end
     end
 
     def token_expiration_time
-      RobustServerSocket.configuration.token_expiration_time || 60
+      RobustServerSocket.configuration.token_expiration_time
+    end
+
+    def validate_secure_token_input(token)
+      # Validate token input to prevent injection
+      raise InvalidToken, 'Token must be a string' unless token.is_a?(String)
+      raise InvalidToken, 'Token cannot be empty' if token.empty?
+      raise InvalidToken, 'Token too long' if token.length > 2048
+
+      token
     end
   end
 end
