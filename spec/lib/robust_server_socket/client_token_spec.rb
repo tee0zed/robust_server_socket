@@ -1,6 +1,7 @@
 require 'spec_helper'
 require './lib/robust_server_socket/client_token'
 require './lib/robust_server_socket/secure_token/cacher'
+require './lib/robust_server_socket/rate_limiter'
 
 RSpec.describe RobustServerSocket::ClientToken, stub_configuration: true do
   subject(:perform) { described_class.validate!(token) }
@@ -12,6 +13,8 @@ RSpec.describe RobustServerSocket::ClientToken, stub_configuration: true do
   before do
     allow(RobustServerSocket::SecureToken::Cacher).to receive_messages(get: nil, incr: 'OK', atomic_validate_and_log: 'ok')
     allow(Time).to receive_message_chain(:now, :utc, :to_i).and_return(10_010)
+    # Stub rate limiter to not interfere with existing tests
+    allow(RobustServerSocket::RateLimiter).to receive(:check!).and_return(0)
   end
 
   context 'when token valid' do
@@ -102,6 +105,18 @@ RSpec.describe RobustServerSocket::ClientToken, stub_configuration: true do
 
     it 'raises InvalidToken with message' do
       expect { perform }.to raise_error(RobustServerSocket::ClientToken::InvalidToken, /Unexpected validation result/)
+    end
+  end
+
+  context 'when rate limit is exceeded' do
+    before do
+      allow(RobustServerSocket::RateLimiter).to receive(:check!).and_raise(
+        RobustServerSocket::RateLimiter::RateLimitExceeded.new('Rate limit exceeded')
+      )
+    end
+
+    it 'raises RateLimitExceeded' do
+      expect { perform }.to raise_error(RobustServerSocket::RateLimiter::RateLimitExceeded, 'Rate limit exceeded')
     end
   end
 

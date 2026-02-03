@@ -1,8 +1,11 @@
 require_relative 'secure_token/cacher'
 require_relative 'secure_token/decrypt'
+require_relative 'rate_limiter'
 
 module RobustServerSocket
   class ClientToken
+    TOKEN_REGEXP = /\A(.+)_(\d{10,})\z/.freeze
+
     InvalidToken = Class.new(StandardError)
     UnauthorizedClient = Class.new(StandardError)
     UsedToken = Class.new(StandardError)
@@ -12,6 +15,8 @@ module RobustServerSocket
       new(secure_token).tap do |instance|
         raise InvalidToken unless instance.decrypted_token
         raise UnauthorizedClient unless instance.client
+
+        RateLimiter.check!(instance.client)
 
         result = instance.atomic_validate_and_log_token
 
@@ -89,7 +94,7 @@ module RobustServerSocket
 
     def split_token
       @split_token ||= begin
-        match_data = decrypted_token.to_s.match(/\A(.+)_(\d{10,})\z/)
+        match_data = decrypted_token.to_s.match(TOKEN_REGEXP)
         raise InvalidToken, 'Invalid token format' unless match_data
         match_data.captures
       end

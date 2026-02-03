@@ -55,6 +55,14 @@ module RobustServerSocket
           false
         end
 
+        # Execute a block with Redis connection (for rate limiting and other operations)
+        def with_redis(&block)
+          redis.with(&block)
+        rescue Redis::BaseConnectionError => e
+          handle_redis_error(e, 'with_redis')
+          raise RedisConnectionError, "Redis operation failed: #{e.message}"
+        end
+
         private
 
         def lua_atomic_validate

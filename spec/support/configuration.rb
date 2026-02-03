@@ -11,7 +11,10 @@ RSpec.shared_context :configuration do
       redis_pass: 'redis-password',
       private_key: private_key.to_pem,
       token_expiration_time: 60,
-      allowed_services: [client]
+      allowed_services: [client],
+      rate_limit_enabled: false,
+      rate_limit_max_requests: 100,
+      rate_limit_window_seconds: 60
     )
   end
 end

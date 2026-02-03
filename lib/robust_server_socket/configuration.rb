@@ -43,6 +43,13 @@ module RobustServerSocket
   end
 
   class ConfigStore
-    attr_accessor :allowed_services, :private_key, :token_expiration_time, :redis_url, :redis_pass
+    attr_accessor :allowed_services, :private_key, :token_expiration_time, :redis_url, :redis_pass,
+                  :rate_limit_enabled, :rate_limit_max_requests, :rate_limit_window_seconds
+
+    def initialize
+      @rate_limit_enabled = false
+      @rate_limit_max_requests = 100
+      @rate_limit_window_seconds = 60
+    end
   end
 end

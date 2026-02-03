@@ -3,6 +3,7 @@ require_relative 'secure_token/decrypt'
 
 module RobustServerSocket
   class PrivateMessage
+    MESSAGE_REGEXP = /\A([a-zA-Z0-9\s!@#$%^&*(),.?":{}|<>\[\]\\;'`~+=\/-]+)_(\d+)\z/.freeze
     InvalidMessage = Class.new(StandardError)
     StaleMessage = Class.new(StandardError)
 
@@ -59,7 +60,7 @@ module RobustServerSocket
 
     def split_message
       @split_message ||= begin
-        match_data = decrypted_message.match(/\A([a-zA-Z0-9\s!@#$%^&*(),.?":{}|<>\[\]\\;'`~+=\/-]+)_(\d+)\z/)
+        match_data = decrypted_message.match(MESSAGE_REGEXP)
         raise InvalidMessage, 'Malformed message format' unless match_data
 
         match_data.captures

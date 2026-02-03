@@ -29,6 +29,11 @@ RobustServerSocket.configure do |c|
   # we should add 'core' to allowed_services
   c.redis_url = 'redis://localhost:6379' # redis url for storing tokens
   c.redis_pass = 'password' # redis password
+  
+  # Optional: Rate Limiting (disabled by default)
+  c.rate_limit_enabled = true # enable rate limiting per client
+  c.rate_limit_max_requests = 100 # maximum requests per window (default: 100)
+  c.rate_limit_window_seconds = 60 # time window in seconds (default: 60)
 end
   
 RobustServerSocket.load!
@@ -49,5 +54,6 @@ RobustServerSocket::ClientToken.validate!(token) # shortcut for token.valid? and
 `RobustServerSocket::ClientToken::UsedToken` - token is already used
 `RobustServerSocket::ClientToken::StaleToken` - token is stale over the expiration time
 `RobustServerSocket::ClientToken::InvalidToken` - token decryption failed
+`RobustServerSocket::ClientToken::RateLimitExceeded` - client exceeded rate limit (only when rate limiting is enabled)
 
 
