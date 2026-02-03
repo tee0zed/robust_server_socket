@@ -42,7 +42,10 @@ module RobustServerSocket
     end
 
     def client
-      @client ||= allowed_clients.detect { _1.eql?(client_name.strip) }
+      @client ||= begin
+        target = client_name.strip
+        allowed_clients.detect { |allowed| secure_compare(allowed, target) }
+      end
     end
 
     def token_not_expired?
@@ -86,7 +89,7 @@ module RobustServerSocket
 
     def split_token
       @split_token ||= begin
-        match_data = decrypted_token.match(/(.*?)_(\d+)\z/)
+        match_data = decrypted_token.to_s.match(/\A(.+)_(\d{10,})\z/)
         raise InvalidToken, 'Invalid token format' unless match_data
         match_data.captures
       end
@@ -94,6 +97,13 @@ module RobustServerSocket
 
     def token_expiration_time
       RobustServerSocket.configuration.token_expiration_time
+    end
+
+    # Constant-time comparison to protect against timing attacks
+    def secure_compare(a, b)
+      return false unless a.bytesize == b.bytesize
+
+      a.bytes.zip(b.bytes).reduce(0) { |diff, (x, y)| diff | (x ^ y) }.zero?
     end
 
     def validate_secure_token_input(token)

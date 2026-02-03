@@ -9,7 +9,7 @@ RSpec.shared_context :configuration do
       RobustServerSocket::ConfigStore,
       redis_url: 'redis://localhost:6379/0',
       redis_pass: 'redis-password',
-      private_key:,
+      private_key: private_key.to_pem,
       token_expiration_time: 60,
       allowed_services: [client]
     )

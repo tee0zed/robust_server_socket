@@ -7,7 +7,7 @@ RSpec.describe RobustServerSocket::PrivateMessage, stub_configuration: true do
 
   include_context :configuration
 
-  let(:token) { Base64.strict_encode64(private_key.public_encrypt("#{message}_10000")) }
+  let(:token) { Base64.strict_encode64(private_key.public_encrypt("#{message}_10000", OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING)) }
 
   before do
     allow(RobustServerSocket::SecureToken::Cacher).to receive_messages(atomic_validate_and_log: 'ok')
@@ -42,7 +42,7 @@ RSpec.describe RobustServerSocket::PrivateMessage, stub_configuration: true do
   end
 
   context 'when message format is malformed' do
-    let(:token) { Base64.strict_encode64(private_key.public_encrypt('no_underscore_here')) }
+    let(:token) { Base64.strict_encode64(private_key.public_encrypt('no_underscore_here', OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING)) }
 
     it 'raises InvalidMessage' do
       expect { perform }.to raise_error(RobustServerSocket::PrivateMessage::InvalidMessage, 'Malformed message format')
@@ -92,7 +92,7 @@ RSpec.describe RobustServerSocket::PrivateMessage, stub_configuration: true do
       instance = described_class.new(token)
       key = instance.cache_key
       expect(key).to be_a(String)
-      expect(key.length).to eq(33)
+      expect(key.length).to eq(64) # Full SHA256 hex digest
     end
   end
 

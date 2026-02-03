@@ -19,7 +19,7 @@ module RobustServerSocket
             raise InvalidToken, 'Token too large'
           end
 
-          private_key.private_decrypt(decoded_token)
+          private_key.private_decrypt(decoded_token, OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING).force_encoding('UTF-8')
         rescue OpenSSL::PKey::RSAError, ArgumentError
           raise InvalidToken, 'Invalid token'
         end

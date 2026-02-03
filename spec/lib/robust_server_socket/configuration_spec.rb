@@ -9,7 +9,26 @@ RSpec.describe RobustServerSocket::Configuration, stub_configuration: false do #
   describe '#configure' do
     it 'yields the configuration object to the block' do
       dummy_class.configure do |config|
+        config.allowed_services = ['client']
+        config.token_expiration_time = 60
+        config.redis_url = 'redis://localhost:6379/0'
+        config.private_key = private_key.to_pem
         expect(config).to be_a(RobustServerSocket::ConfigStore)
+      end
+    end
+
+    context 'with invalid key size' do
+      let(:small_key) { OpenSSL::PKey::RSA.generate(1024) }
+
+      it 'raises SecurityError' do
+        expect {
+          dummy_class.configure do |config|
+            config.allowed_services = ['client']
+            config.token_expiration_time = 60
+            config.redis_url = 'redis://localhost:6379/0'
+            config.private_key = small_key.to_pem
+          end
+        }.to raise_error(SecurityError, /below minimum/)
       end
     end
   end
@@ -24,14 +43,24 @@ RSpec.describe RobustServerSocket::Configuration, stub_configuration: false do #
     end
 
     it 'returns true if configured' do
-      dummy_class.configure { |config| } # rubocop:disable Lint/EmptyBlock
+      dummy_class.configure do |config|
+        config.allowed_services = ['client']
+        config.token_expiration_time = 60
+        config.redis_url = 'redis://localhost:6379/0'
+        config.private_key = private_key.to_pem
+      end
       expect(dummy_class.configured?).to be(true)
     end
   end
 
   describe '#correct_configuration?' do
     it 'returns false if not configured' do
-      dummy_class.configure { |config| } # rubocop:disable Lint/EmptyBlock
+      dummy_class.configure do |config|
+        config.allowed_services = []
+        config.token_expiration_time = 60
+        config.redis_url = 'redis://localhost:6379/0'
+        config.private_key = private_key.to_pem
+      end
       expect(dummy_class.correct_configuration?).to be(false)
     end
 

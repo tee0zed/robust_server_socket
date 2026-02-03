@@ -4,6 +4,8 @@ require 'connection_pool'
 module RobustServerSocket
   module SecureToken
     module Cacher
+      class RedisConnectionError < StandardError; end
+
       class << self
         # Atomically validate token: check expiration and usage, then mark as used
         # Returns: 'ok', 'stale', or 'used'
@@ -17,22 +19,40 @@ module RobustServerSocket
               argv: [ttl, timestamp, expiration_time, current_time]
             )
           end
+        rescue Redis::BaseConnectionError => e
+          handle_redis_error(e, 'atomic_validate_and_log')
+          raise RedisConnectionError, "Failed to validate token: #{e.message}"
         end
 
         def incr(key, ttl = nil)
           ttl_value = ttl || ttl_seconds
+
           redis.with do |conn|
             conn.pipelined do |pipeline|
               pipeline.incrby(key, 1)
               pipeline.expire(key, ttl_value)
             end
           end
+        rescue Redis::BaseConnectionError => e
+          handle_redis_error(e, 'incr')
+          raise RedisConnectionError, "Failed to increment key: #{e.message}"
         end
 
         def get(key)
           redis.with do |conn|
             conn.get(key)
           end
+        rescue Redis::BaseConnectionError => e
+          handle_redis_error(e, 'get')
+          nil # Fallback for reads
+        end
+
+        def health_check
+          redis.with do |conn|
+            conn.ping == 'PONG'
+          end
+        rescue Redis::BaseConnectionError
+          false
         end
 
         private
@@ -76,16 +96,29 @@ module RobustServerSocket
 
         def pool_config
           {
-            size: ENV.fetch('SIDEKIQ_CONCURRENCY', 10).to_i,
-            timeout: ENV.fetch('REDIS_TIMEOUT', 3)
+            size: ENV.fetch('REDIS_POOL_SIZE', 25).to_i,
+            timeout: ENV.fetch('REDIS_POOL_TIMEOUT', 1).to_f
           }
         end
 
         def redis_config
-          {}.tap do |config|
-            config[:url] = RobustServerSocket.configuration.redis_url
-            config[:password] = RobustServerSocket.configuration.redis_pass
-          end
+          config = {
+            url: RobustServerSocket.configuration.redis_url,
+            reconnect_attempts: 3,
+            reconnect_delay: 0.5,
+            reconnect_delay_max: 2.0,
+            timeout: 1.0,
+            connect_timeout: 2.0
+          }
+
+          password = RobustServerSocket.configuration.redis_pass
+          config[:password] = password if password && !password.empty?
+
+          config
+        end
+
+        def handle_redis_error(error, operation)
+          warn "Redis operation '#{operation}' failed: #{error.class} - #{error.message}"
         end
       end
     end

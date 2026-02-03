@@ -7,7 +7,7 @@ RSpec.describe RobustServerSocket::ClientToken, stub_configuration: true do
 
   include_context :configuration
 
-  let(:token) { Base64.strict_encode64(private_key.public_encrypt("#{client}_10000")) }
+  let(:token) { Base64.strict_encode64(private_key.public_encrypt("#{client}_1000000000", OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING)) }
 
   before do
     allow(RobustServerSocket::SecureToken::Cacher).to receive_messages(get: nil, incr: 'OK', atomic_validate_and_log: 'ok')
@@ -22,7 +22,7 @@ RSpec.describe RobustServerSocket::ClientToken, stub_configuration: true do
   end
 
   context 'when client does not exist' do
-    let(:token) { Base64.strict_encode64(private_key.public_encrypt('whatevs_10000')) }
+    let(:token) { Base64.strict_encode64(private_key.public_encrypt('whatevs_1000000000', OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING)) }
 
     it 'raises' do
       expect { perform }.to raise_error(RobustServerSocket::ClientToken::UnauthorizedClient)
@@ -60,7 +60,7 @@ RSpec.describe RobustServerSocket::ClientToken, stub_configuration: true do
   end
 
   context 'when token format is malformed' do
-    let(:token) { Base64.strict_encode64(private_key.public_encrypt('invalid_format')) }
+    let(:token) { Base64.strict_encode64(private_key.public_encrypt('invalid_format', OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING)) }
 
     before do
       allow(RobustServerSocket::SecureToken::Decrypt).to receive(:call).and_return('no_underscore_timestamp')
@@ -139,6 +139,10 @@ RSpec.describe RobustServerSocket::ClientToken, stub_configuration: true do
 
   describe '#token_not_expired?' do
     context 'when token is fresh' do
+      before do
+        allow(Time).to receive_message_chain(:now, :utc, :to_i).and_return(1000000010)
+      end
+
       it 'returns true' do
         instance = described_class.new(token)
         expect(instance.token_not_expired?).to be true
@@ -147,7 +151,7 @@ RSpec.describe RobustServerSocket::ClientToken, stub_configuration: true do
 
     context 'when token is expired' do
       before do
-        allow(Time).to receive_message_chain(:now, :utc, :to_i).and_return(100_000)
+        allow(Time).to receive_message_chain(:now, :utc, :to_i).and_return(1000000100)
       end
 
       it 'returns false' do

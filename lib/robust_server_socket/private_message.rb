@@ -24,8 +24,10 @@ module RobustServerSocket
     end
 
     def cache_key
-      require 'digest/sha2'
-      Digest::SHA256.hexdigest(decrypted_message)[0..32]
+      @cache_key ||= begin
+        require 'digest/sha2'
+        Digest::SHA256.hexdigest(decrypted_message)
+      end
     end
 
     def atomic_validate_and_log_message
