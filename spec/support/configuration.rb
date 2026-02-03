@@ -7,6 +7,8 @@ RSpec.shared_context :configuration do
   let(:configuration) do
     instance_double(
       RobustServerSocket::ConfigStore,
+      redis_url: 'redis://localhost:6379/0',
+      redis_pass: 'redis-password',
       private_key:,
       token_expiration_time: 60,
       allowed_services: [client]

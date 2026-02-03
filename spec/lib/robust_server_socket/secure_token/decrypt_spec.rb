@@ -7,7 +7,7 @@ RSpec.describe RobustServerSocket::SecureToken::Decrypt, stub_configuration: tru
   describe '.call' do
     let(:public_key) { private_key.public_key }
     let(:original_text) { 'Hello, world!' }
-    let(:encrypted_token) { Base64.strict_encode64(public_key.public_encrypt(original_text)) }
+    let(:encrypted_token) { ::Base64.strict_encode64(public_key.public_encrypt(original_text)) }
     let(:fake_token) { 'Fake Token' }
 
     it 'decrypts a token correctly' do

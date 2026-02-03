@@ -7,7 +7,6 @@ gemspec
 
 gem 'rake', '~> 13.0'
 gem 'redis'
-gem 'hiredis'
 gem 'connection_pool'
 
 group :development, :test do
