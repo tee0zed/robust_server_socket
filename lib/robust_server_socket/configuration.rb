@@ -30,14 +30,14 @@ module RobustServerSocket
     private
 
     def validate_key_security!
-      key = OpenSSL::PKey::RSA.new(configuration.private_key)
+      key = ::OpenSSL::PKey::RSA.new(configuration.private_key)
       key_bits = key.n.num_bits
 
       if key_bits < MIN_KEY_SIZE
         raise SecurityError,
           "RSA key size (#{key_bits} bits) below minimum (#{MIN_KEY_SIZE} bits)"
       end
-    rescue OpenSSL::PKey::RSAError => e
+    rescue ::OpenSSL::PKey::RSAError => e
       raise SecurityError, "Invalid private key: #{e.message}"
     end
   end

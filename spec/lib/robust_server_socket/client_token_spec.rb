@@ -141,17 +141,6 @@ RSpec.describe RobustServerSocket::ClientToken, stub_configuration: true do
     end
   end
 
-  describe '#usage_count' do
-    before do
-      allow(RobustServerSocket::SecureToken::Cacher).to receive(:get).and_return('5')
-    end
-
-    it 'returns count from cache' do
-      instance = described_class.new(token)
-      expect(instance.usage_count).to eq(5)
-    end
-  end
-
   describe '#token_not_expired?' do
     context 'when token is fresh' do
       before do

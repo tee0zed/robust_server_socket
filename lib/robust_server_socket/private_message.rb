@@ -4,6 +4,7 @@ require_relative 'secure_token/decrypt'
 module RobustServerSocket
   class PrivateMessage
     MESSAGE_REGEXP = /\A([a-zA-Z0-9\s!@#$%^&*(),.?":{}|<>\[\]\\;'`~+=\/-]+)_(\d+)\z/.freeze
+
     InvalidMessage = Class.new(StandardError)
     StaleMessage = Class.new(StandardError)
 
@@ -27,7 +28,7 @@ module RobustServerSocket
     def cache_key
       @cache_key ||= begin
         require 'digest/sha2'
-        Digest::SHA256.hexdigest(decrypted_message)
+        ::Digest::SHA256.hexdigest(decrypted_message)
       end
     end
 
@@ -45,13 +46,13 @@ module RobustServerSocket
     end
 
     def timestamp
-      raise InvalidMessage, 'Timestamp not found in message' unless split_message && split_message.length >= 2
+      raise InvalidMessage, 'Timestamp not found in message' unless split_message && split_message.length == 2
 
       split_message.last.to_i
     end
 
     def message
-      raise InvalidMessage, 'Message content not found' unless split_message && split_message.length >= 1
+      raise InvalidMessage, 'Message content not found' unless split_message && split_message.length == 2
 
       split_message.first
     end

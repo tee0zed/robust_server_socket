@@ -66,14 +66,6 @@ module RobustServerSocket
       )
     end
 
-    def token_used?
-      usage_count.positive?
-    end
-
-    def usage_count
-      SecureToken::Cacher.get(decrypted_token).to_i
-    end
-
     def decrypted_token
       @decrypted_token ||= SecureToken::Decrypt.call(@secure_token)
     end
@@ -81,7 +73,7 @@ module RobustServerSocket
     private
 
     def allowed_clients
-      RobustServerSocket.configuration.allowed_services.map(&:strip)
+      ::RobustServerSocket.configuration.allowed_services.map(&:strip)
     end
 
     def timestamp
@@ -104,7 +96,7 @@ module RobustServerSocket
       RobustServerSocket.configuration.token_expiration_time
     end
 
-    # Constant-time comparison to protect against timing attacks
+    # Do we need it? It would be useful only if public_key compromised
     def secure_compare(a, b)
       return false unless a.bytesize == b.bytesize
 

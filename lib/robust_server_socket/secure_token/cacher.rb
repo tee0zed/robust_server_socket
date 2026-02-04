@@ -19,7 +19,7 @@ module RobustServerSocket
               argv: [ttl, timestamp, expiration_time, current_time]
             )
           end
-        rescue Redis::BaseConnectionError => e
+        rescue ::Redis::BaseConnectionError => e
           handle_redis_error(e, 'atomic_validate_and_log')
           raise RedisConnectionError, "Failed to validate token: #{e.message}"
         end
@@ -33,7 +33,7 @@ module RobustServerSocket
               pipeline.expire(key, ttl_value)
             end
           end
-        rescue Redis::BaseConnectionError => e
+        rescue ::Redis::BaseConnectionError => e
           handle_redis_error(e, 'incr')
           raise RedisConnectionError, "Failed to increment key: #{e.message}"
         end
@@ -42,7 +42,7 @@ module RobustServerSocket
           redis.with do |conn|
             conn.get(key)
           end
-        rescue Redis::BaseConnectionError => e
+        rescue ::Redis::BaseConnectionError => e
           handle_redis_error(e, 'get')
           nil # Fallback for reads
         end
@@ -51,16 +51,20 @@ module RobustServerSocket
           redis.with do |conn|
             conn.ping == 'PONG'
           end
-        rescue Redis::BaseConnectionError
+        rescue ::Redis::BaseConnectionError
           false
         end
 
-        # Execute a block with Redis connection (for rate limiting and other operations)
         def with_redis(&block)
           redis.with(&block)
-        rescue Redis::BaseConnectionError => e
+        rescue ::Redis::BaseConnectionError => e
           handle_redis_error(e, 'with_redis')
-          raise RedisConnectionError, "Redis operation failed: #{e.message}"
+          raise ::RedisConnectionError, "Redis operation failed: #{e.message}"
+        end
+
+        # Clear cached Redis connection pool (useful for hot reloading in development)
+        def clear_redis_pool_cache!
+          @pool = nil
         end
 
         private
@@ -93,12 +97,14 @@ module RobustServerSocket
         end
 
         def ttl_seconds
-          RobustServerSocket.configuration.token_expiration_time + 60
+          ::RobustServerSocket.configuration.token_expiration_time + 60
         end
 
+        # Cache Redis connection pool at module level for the lifetime of the Rails process
+        # This avoids recreating the connection pool on every Redis operation
         def redis
-          @pool = ConnectionPool::Wrapper.new(**pool_config) do
-            Redis.new(redis_config)
+          @pool ||= ::ConnectionPool::Wrapper.new(**pool_config) do
+            ::Redis.new(redis_config)
           end
         end
 
@@ -111,7 +117,7 @@ module RobustServerSocket
 
         def redis_config
           config = {
-            url: RobustServerSocket.configuration.redis_url,
+            url: ::RobustServerSocket.configuration.redis_url,
             reconnect_attempts: 3,
             reconnect_delay: 0.5,
             reconnect_delay_max: 2.0,
@@ -119,7 +125,7 @@ module RobustServerSocket
             connect_timeout: 2.0
           }
 
-          password = RobustServerSocket.configuration.redis_pass
+          password = ::RobustServerSocket.configuration.redis_pass
           config[:password] = password if password && !password.empty?
 
           config

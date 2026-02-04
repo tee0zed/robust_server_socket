@@ -55,18 +55,15 @@ module RobustServerSocket
       end
 
       def rate_limit_enabled?
-        config = RobustServerSocket.configuration
-        config.respond_to?(:rate_limit_enabled) && config.rate_limit_enabled
+        RobustServerSocket.configuration.rate_limit_enabled
       end
 
       def max_requests
-        config = RobustServerSocket.configuration
-        config.respond_to?(:rate_limit_max_requests) ? config.rate_limit_max_requests : 100
+        RobustServerSocket.configuration.rate_limit_max_requests
       end
 
       def window_seconds
-        config = RobustServerSocket.configuration
-        config.respond_to?(:rate_limit_window_seconds) ? config.rate_limit_window_seconds : 60
+        RobustServerSocket.configuration.rate_limit_window_seconds
       end
 
       def handle_redis_error(error, operation)

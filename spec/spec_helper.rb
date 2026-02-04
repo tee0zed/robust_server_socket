@@ -20,6 +20,20 @@ require 'openssl'
 Dir[File.join(File.dirname(__FILE__), '..', 'spec', 'support', '**/*.rb')].each { |f| require f }
 
 RSpec.configure do |config|
+  # Clear module-level memoized caches after each example to prevent mock leaking
+  config.after(:each) do
+    # Clear RobustServerSocket caches
+    if defined?(RobustServerSocket::SecureToken::Decrypt) && 
+       RobustServerSocket::SecureToken::Decrypt.respond_to?(:clear_private_key_cache!)
+      RobustServerSocket::SecureToken::Decrypt.clear_private_key_cache!
+    end
+    
+    if defined?(RobustServerSocket::SecureToken::Cacher) && 
+       RobustServerSocket::SecureToken::Cacher.respond_to?(:clear_redis_pool_cache!)
+      RobustServerSocket::SecureToken::Cacher.clear_redis_pool_cache!
+    end
+  end
+
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
   # assertions if you prefer.
