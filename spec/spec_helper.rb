@@ -23,13 +23,11 @@ RSpec.configure do |config|
   # Clear module-level memoized caches after each example to prevent mock leaking
   config.after(:each) do
     # Clear RobustServerSocket caches
-    if defined?(RobustServerSocket::SecureToken::Decrypt) && 
-       RobustServerSocket::SecureToken::Decrypt.respond_to?(:clear_private_key_cache!)
+    if defined?(RobustServerSocket::SecureToken::Decrypt)
       RobustServerSocket::SecureToken::Decrypt.clear_private_key_cache!
     end
-    
-    if defined?(RobustServerSocket::SecureToken::Cacher) && 
-       RobustServerSocket::SecureToken::Cacher.respond_to?(:clear_redis_pool_cache!)
+
+    if defined?(RobustServerSocket::SecureToken::Cacher)
       RobustServerSocket::SecureToken::Cacher.clear_redis_pool_cache!
     end
   end
