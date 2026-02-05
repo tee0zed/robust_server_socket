@@ -119,8 +119,6 @@ module RobustServerSocket
           config = {
             url: ::RobustServerSocket.configuration.redis_url,
             reconnect_attempts: 3,
-            reconnect_delay: 0.5,
-            reconnect_delay_max: 2.0,
             timeout: 1.0,
             connect_timeout: 2.0
           }
