@@ -6,14 +6,9 @@ module RobustServerSocket
 
     class << self
       def check!(client_name)
-        return 0 unless rate_limit_enabled?
-
-        key = rate_limit_key(client_name)
-        attempts = increment_attempts(key)
-
-        if attempts > max_requests
-          raise RateLimitExceeded,
-            "Rate limit exceeded for #{client_name}: #{attempts}/#{max_requests} requests per #{window_seconds}s"
+        unless (attempts = check(client_name))
+          actual_attempts = current_attempts(client_name)
+          raise RateLimitExceeded, "Rate limit exceeded for #{client_name}: #{actual_attempts}/#{max_requests} requests per #{window_seconds}s"
         end
 
         attempts
@@ -25,7 +20,7 @@ module RobustServerSocket
         key = rate_limit_key(client_name)
         attempts = increment_attempts(key)
 
-        return nil if attempts > max_requests
+        return false if attempts > max_requests
 
         attempts
       end

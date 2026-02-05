@@ -121,21 +121,127 @@ RSpec.describe RobustServerSocket::ClientToken, stub_configuration: true do
   end
 
   describe '#valid?' do
+    let(:instance) { described_class.new(token) }
+
+    before do
+      allow(RobustServerSocket::RateLimiter).to receive(:check).and_return(1)
+    end
+
     context 'when all validations pass' do
-      it 'returns true' do
-        instance = described_class.new(token)
+      before do
         allow(RobustServerSocket::SecureToken::Cacher).to receive(:atomic_validate_and_log).and_return('ok')
+      end
+
+      it 'returns true' do
         expect(instance.valid?).to be true
+      end
+
+      it 'checks rate limit' do
+        instance.valid?
+        expect(RobustServerSocket::RateLimiter).to have_received(:check).with(client)
       end
     end
 
     context 'when decryption fails' do
       before do
+        allow(RobustServerSocket::SecureToken::Decrypt).to receive(:call).and_return(nil)
+      end
+
+      it 'returns false' do
+        expect(instance.valid?).to be false
+      end
+
+      it 'does not check rate limit' do
+        instance.valid?
+        expect(RobustServerSocket::RateLimiter).not_to have_received(:check)
+      end
+    end
+
+    context 'when decryption raises an error' do
+      before do
         allow(RobustServerSocket::SecureToken::Decrypt).to receive(:call).and_raise(RobustServerSocket::SecureToken::InvalidToken)
       end
 
       it 'returns false' do
-        instance = described_class.new(token)
+        expect(instance.valid?).to be false
+      end
+    end
+
+    context 'when client is not authorized' do
+      let(:token) { Base64.strict_encode64(private_key.public_encrypt('unauthorized_client_1000000000', OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING)) }
+
+      it 'returns false' do
+        expect(instance.valid?).to be false
+      end
+
+      it 'does not check rate limit' do
+        instance.valid?
+        expect(RobustServerSocket::RateLimiter).not_to have_received(:check)
+      end
+    end
+
+    context 'when rate limit is exceeded' do
+      before do
+        allow(RobustServerSocket::RateLimiter).to receive(:check).and_return(nil)
+        allow(RobustServerSocket::SecureToken::Cacher).to receive(:atomic_validate_and_log).and_return('ok')
+      end
+
+      it 'returns false' do
+        expect(instance.valid?).to be false
+      end
+
+      it 'does not call atomic_validate_and_log_token' do
+        instance.valid?
+        expect(RobustServerSocket::SecureToken::Cacher).not_to have_received(:atomic_validate_and_log)
+      end
+    end
+
+    context 'when rate limiter raises an error' do
+      before do
+        allow(RobustServerSocket::RateLimiter).to receive(:check).and_raise(StandardError.new('Redis error'))
+      end
+
+      it 'returns false' do
+        expect(instance.valid?).to be false
+      end
+    end
+
+    context 'when token is used' do
+      before do
+        allow(RobustServerSocket::SecureToken::Cacher).to receive(:atomic_validate_and_log).and_return('used')
+      end
+
+      it 'returns false' do
+        expect(instance.valid?).to be false
+      end
+    end
+
+    context 'when token is stale' do
+      before do
+        allow(RobustServerSocket::SecureToken::Cacher).to receive(:atomic_validate_and_log).and_return('stale')
+      end
+
+      it 'returns false' do
+        expect(instance.valid?).to be false
+      end
+    end
+
+    context 'when atomic validation returns unexpected result' do
+      before do
+        allow(RobustServerSocket::SecureToken::Cacher).to receive(:atomic_validate_and_log).and_return('unknown')
+      end
+
+      it 'returns false' do
+        expect(instance.valid?).to be false
+      end
+    end
+
+    context 'when atomic validation raises an error' do
+      before do
+        allow(RobustServerSocket::SecureToken::Cacher).to receive(:atomic_validate_and_log).and_raise(StandardError.new('Cache error'))
+      end
+
+      it 'returns false' do
         expect(instance.valid?).to be false
       end
     end

@@ -39,10 +39,10 @@ module RobustServerSocket
     end
 
     def valid?
-      decrypted_token &&
+      !!(decrypted_token &&
         client &&
         RateLimiter.check(client) &&
-        atomic_validate_and_log_token == 'ok'
+        atomic_validate_and_log_token == 'ok')
     rescue StandardError
       false
     end

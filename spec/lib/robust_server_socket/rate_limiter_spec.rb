@@ -66,6 +66,7 @@ RSpec.describe RobustServerSocket::RateLimiter, stub_configuration: true do
         before do
           allow(redis_conn).to receive(:incr).and_return(11)
           allow(redis_conn).to receive(:expire)
+          allow(RobustServerSocket::SecureToken::Cacher).to receive(:get).and_return('11')
         end
 
         it 'raises RateLimitExceeded' do
