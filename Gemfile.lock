@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    robust_server_socket (0.2.4)
+    robust_server_socket (0.3.1)
       hiredis
       rake
       redis
@@ -49,7 +49,6 @@ PLATFORMS
 DEPENDENCIES
   connection_pool
   pry
-  rake (~> 13.0)
   redis
   robust_server_socket!
   rspec
