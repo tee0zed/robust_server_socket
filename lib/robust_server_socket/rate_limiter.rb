@@ -19,6 +19,17 @@ module RobustServerSocket
         attempts
       end
 
+      def check(client_name)
+        return 0 unless rate_limit_enabled?
+
+        key = rate_limit_key(client_name)
+        attempts = increment_attempts(key)
+
+        return nil if attempts > max_requests
+
+        attempts
+      end
+
       def current_attempts(client_name)
         return 0 unless rate_limit_enabled?
 

@@ -41,15 +41,16 @@ module RobustServerSocket
     def valid?
       decrypted_token &&
         client &&
+        RateLimiter.check(client) &&
         atomic_validate_and_log_token == 'ok'
-    rescue SecureToken::InvalidToken
+    rescue StandardError
       false
     end
 
     def client
       @client ||= begin
         target = client_name.strip
-        allowed_clients.detect { |allowed| secure_compare(allowed, target) }
+        allowed_clients.detect { |allowed| allowed.eql?(target) }
       end
     end
 
@@ -97,11 +98,11 @@ module RobustServerSocket
     end
 
     # Do we need it? It would be useful only if public_key compromised
-    def secure_compare(a, b)
-      return false unless a.bytesize == b.bytesize
-
-      a.bytes.zip(b.bytes).reduce(0) { |diff, (x, y)| diff | (x ^ y) }.zero?
-    end
+    # def secure_compare(a, b)
+    #   return false unless a.bytesize == b.bytesize
+    #
+    #   a.bytes.zip(b.bytes).reduce(0) { |diff, (x, y)| diff | (x ^ y) }.zero?
+    # end
 
     def validate_secure_token_input(token)
       # Validate token input to prevent injection
