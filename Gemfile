@@ -5,8 +5,8 @@ source "https://rubygems.org"
 # Specify your gem's dependencies in payguard.gemspec
 gemspec
 
-gem 'redis'
-gem 'connection_pool'
+gem 'redis', '~> 4.0'
+gem 'connection_pool', '~> 2.2'
 
 group :development, :test do
   gem 'rspec'

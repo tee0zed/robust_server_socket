@@ -17,6 +17,5 @@ module RobustServerSocket
 
     require_relative 'robust_server_socket/rate_limiter'
     require_relative 'robust_server_socket/client_token'
-    require_relative 'robust_server_socket/private_message'
   end
 end
