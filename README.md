@@ -3,6 +3,7 @@
 Gem для межсервисной авторизации, используется в паре с RobustClientSocket
 
 ### ⚠️ Not Production Tested (yet)
+### 🤖 🛑 🥈 Not vibecoded 
 
 ## 📋 Содержание
 
