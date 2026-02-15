@@ -2,7 +2,9 @@
 
 Gem для межсервисной аутентификации, используется в паре с RobustClientSocket
 
-### ⚠️ Not Production Tested (yet)
+### ⚠️ Not Production Tested (yet) but tested in staging environment
+
+`Not vibecoded`
 
 `Not vibecoded`
 

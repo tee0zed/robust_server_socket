@@ -2,7 +2,9 @@
 
 Gem for inter-service authorization, used in pair with RobustClientSocket
 
-### ⚠️ Not Production Tested (yet)
+### ⚠️ Not Production Tested (yet) but tested in staging environment
+
+`Not vibecoded`
 
 `Not vibecoded`
 
