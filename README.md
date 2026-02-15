@@ -1,6 +1,6 @@
 # RobustServerSocket
 
-Gem для межсервисной авторизации, используется в паре с RobustClientSocket
+Gem для межсервисной аутентификации, используется в паре с RobustClientSocket
 
 ### ⚠️ Not Production Tested (yet)
 
