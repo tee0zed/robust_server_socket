@@ -1,7 +1,8 @@
 require 'spec_helper'
-require './lib/robust_server_socket/secure_token/cacher'
 
-RSpec.describe RobustServerSocket::SecureToken::Cacher, stub_configuration: true do
+require './lib/robust_server_socket/cacher'
+
+RSpec.describe RobustServerSocket::Cacher, stub_configuration: true do
   include_context :configuration
   let(:redis_mock) { instance_double(Redis) }
   let(:connection_pool) { instance_double(ConnectionPool) }
@@ -13,7 +14,7 @@ RSpec.describe RobustServerSocket::SecureToken::Cacher, stub_configuration: true
 
   describe '.atomic_validate_and_log' do
     let(:key) { 'test_token' }
-    let(:ttl) { 360 }
+    let(:ttl) { 310 } # 300 + 10
     let(:timestamp) { 10_000 }
     let(:expiration_time) { 300 }
 
@@ -56,28 +57,16 @@ RSpec.describe RobustServerSocket::SecureToken::Cacher, stub_configuration: true
   describe '.incr' do
     let(:key) { 'counter_key' }
 
-    context 'with custom TTL' do
-      it 'increments and sets expiration' do
-        expect(redis_mock).to receive(:pipelined).and_yield(redis_mock)
-        expect(redis_mock).to receive(:incrby).with(key, 1)
-        expect(redis_mock).to receive(:expire).with(key, 600)
-
-        described_class.incr(key, 600)
-      end
+    before do
+      allow(RobustServerSocket.configuration).to receive(:token_expiration_time).and_return(300)
     end
 
-    context 'without custom TTL' do
-      before do
-        allow(RobustServerSocket.configuration).to receive(:token_expiration_time).and_return(300)
-      end
+    it 'increments and sets expiration using configured TTL' do
+      expect(redis_mock).to receive(:pipelined).and_yield(redis_mock)
+      expect(redis_mock).to receive(:incrby).with(key, 1)
+      expect(redis_mock).to receive(:expire).with(key, 310) # token_expiration_time + 10
 
-      it 'uses default TTL' do
-        expect(redis_mock).to receive(:pipelined).and_yield(redis_mock)
-        expect(redis_mock).to receive(:incrby).with(key, 1)
-        expect(redis_mock).to receive(:expire).with(key, 360)
-
-        described_class.incr(key)
-      end
+      described_class.incr(key)
     end
   end
 

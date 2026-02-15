@@ -16,6 +16,12 @@
 
 require 'base64'
 require 'openssl'
+require 'redis'
+require 'connection_pool'
+require 'pry'
+
+Pry.config.input = STDIN
+Pry.config.output = STDOUT
 
 Dir[File.join(File.dirname(__FILE__), '..', 'spec', 'support', '**/*.rb')].each { |f| require f }
 
@@ -27,8 +33,8 @@ RSpec.configure do |config|
       RobustServerSocket::SecureToken::Decrypt.clear_private_key_cache!
     end
 
-    if defined?(RobustServerSocket::SecureToken::Cacher)
-      RobustServerSocket::SecureToken::Cacher.clear_redis_pool_cache!
+    if defined?(RobustServerSocket::Cacher)
+      RobustServerSocket::Cacher.clear_redis_pool_cache!
     end
   end
 

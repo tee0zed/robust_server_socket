@@ -4,6 +4,67 @@ Gem for inter-service authorization, used in pair with RobustClientSocket
 
 ### ⚠️ Not Production Tested (yet)
 
+## WHY
+
+### The Problem
+
+When building microservice architecture, the server side faces:
+
+- **Lack of verification**: How to verify that a request came from a trusted service?
+- **Replay attacks**: Intercepted requests can be replayed
+- **DDoS attacks**: Need to limit request frequency
+- **Boilerplate code**: Repetitive validation logic in every service
+
+### The Solution
+
+RobustServerSocket provides:
+
+- **RSA decryption**: Token authenticity verification
+- **Client whitelist**: Only authorized services allowed
+- **Replay protection**: Blacklist of used tokens in Redis
+- **Rate limiting**: Per-client request limits
+
+## HOW IT WORKS
+
+### Architecture
+
+```
+Incoming request with Secure-Token
+            │
+            v
+┌──────────────────────────────┐
+│    RobustServerSocket        │
+│                              │
+│  1. RSA Decrypt              │
+│  2. Validate Format          │
+│  3. Check Client Whitelist   │
+│  4. Check Rate Limit         │
+│  5. Check Token Reuse        │
+│  6. Check Token Expiration   │
+└──────────────┬───────────────┘
+               │
+      ┌────────┼────────┐
+      v                  v
+ ✅ Success          ❌ Error
+ (continue)         (401/403/429)
+```
+
+### Validation Flow
+
+1. **Decryption**: Base64 decode → RSA decrypt with private key
+2. **Parsing**: Extract `{client_name}_{timestamp}` from token
+3. **Whitelist**: Verify client_name is in `allowed_services`
+4. **Rate limit**: Check request count within window
+5. **Replay check**: Verify token hasn't been used (Redis)
+6. **Staleness**: Verify timestamp is current
+
+### Modular System
+
+Checks are enabled via `using_modules`:
+- `:client_auth_protection` — client whitelist
+- `:replay_attack_protection` — prevent token reuse
+- `:dos_attack_protection` — rate limiting
+
 ## 📋 Table of Contents
 
 - [Security Features](#security-features)
@@ -84,12 +145,7 @@ RobustServerSocket.configure do |c|
   # Redis for storing used tokens
   c.redis_url = ENV.fetch('REDIS_URL', 'redis://localhost:6379/0')
   c.redis_pass = ENV['REDIS_PASSWORD'] # can be nil for local development
-  
-  # OPTIONAL PARAMETERS: Rate Limiting
-  
-  # Enable rate limiting (default: false)
-  c.rate_limit_enabled = true
-  
+
   # Maximum requests per time window (default: 100)
   c.rate_limit_max_requests = 100
   
@@ -210,9 +266,6 @@ Rate Limiter protects your service from overload by limiting the number of reque
 
 ```ruby
 RobustServerSocket.configure do |c|
-  # Enable rate limiting
-  c.rate_limit_enabled = true
-
   # For low-traffic microservices
   c.rate_limit_max_requests = 50
   c.rate_limit_window_seconds = 60
@@ -482,7 +535,7 @@ REDIS_POOL = ConnectionPool.new(size: 25, timeout: 5) do
   )
 end
 
-# In RobustServerSocket::SecureToken::Cacher
+# In RobustServerSocket::Cacher
 def self.with_redis
   REDIS_POOL.with do |redis|
     yield redis
@@ -505,7 +558,6 @@ end
 ```ruby
 RobustServerSocket.configure do |c|
   # For high-load systems
-  c.rate_limit_enabled = true
   c.rate_limit_max_requests = 1000  # Increase limit
   c.rate_limit_window_seconds = 60
   

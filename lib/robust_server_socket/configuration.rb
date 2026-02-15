@@ -4,6 +4,14 @@ module RobustServerSocket
 
     attr_reader :configuration, :configured
 
+    def _push_modules_check_code(code)
+      configuration._modules_check_rows.push(code)
+    end
+
+    def _push_bang_modules_check_code(code)
+      configuration._bang_modules_check_rows.push(code)
+    end
+
     def configure
       @configuration ||= ConfigStore.new
       yield(configuration)
@@ -43,13 +51,24 @@ module RobustServerSocket
   end
 
   class ConfigStore
-    attr_accessor :allowed_services, :private_key, :token_expiration_time, :redis_url, :redis_pass,
-                  :rate_limit_enabled, :rate_limit_max_requests, :rate_limit_window_seconds
+    attr_accessor :allowed_services, :private_key, :token_expiration_time, :store_used_token_time, :redis_url, :redis_pass,
+                  :rate_limit_max_requests, :rate_limit_window_seconds, :using_modules
+
+    attr_reader :_modules_check_rows, :_bang_modules_check_rows
 
     def initialize
-      @rate_limit_enabled = false
       @rate_limit_max_requests = 100
       @rate_limit_window_seconds = 60
+      @store_used_token_time = 600
+      @token_expiration_time = 10
+      @using_modules = %i[
+        client_auth_protection
+        dos_attack_protection
+        replay_attack_protection
+      ]
+
+      @_modules_check_rows = []
+      @_bang_modules_check_rows = []
     end
   end
 end

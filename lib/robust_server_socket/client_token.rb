@@ -1,35 +1,12 @@
-require_relative 'secure_token/cacher'
-require_relative 'secure_token/decrypt'
-require_relative 'rate_limiter'
-
 module RobustServerSocket
   class ClientToken
     TOKEN_REGEXP = /\A(.+)_(\d{10,})\z/.freeze
 
     InvalidToken = Class.new(StandardError)
-    UnauthorizedClient = Class.new(StandardError)
-    UsedToken = Class.new(StandardError)
-    StaleToken = Class.new(StandardError)
 
     def self.validate!(secure_token)
       new(secure_token).tap do |instance|
-        raise InvalidToken unless instance.decrypted_token
-        raise UnauthorizedClient unless instance.client
-
-        RateLimiter.check!(instance.client)
-
-        result = instance.atomic_validate_and_log_token
-
-        case result
-        when 'stale'
-          raise StaleToken
-        when 'used'
-          raise UsedToken
-        when 'ok'
-          true
-        else
-          raise InvalidToken, "Unexpected validation result: #{result}"
-        end
+        instance.validate!
       end
     end
 
@@ -38,13 +15,23 @@ module RobustServerSocket
       @client = nil
     end
 
+    def validate!
+      raise InvalidToken unless validate_decrypted_token
+      modules_checks!
+    end
+
     def valid?
-      !!(decrypted_token &&
-        client &&
-        RateLimiter.check(client) &&
-        atomic_validate_and_log_token == 'ok')
+      validate_decrypted_token && modules_checks
     rescue StandardError
       false
+    end
+
+    def modules_checks
+      true
+    end
+
+    def modules_checks!
+      true
     end
 
     def client
@@ -54,21 +41,12 @@ module RobustServerSocket
       end
     end
 
-    def token_not_expired?
-      token_expiration_time > Time.now.utc.to_i - timestamp
-    end
-
-    def atomic_validate_and_log_token
-      SecureToken::Cacher.atomic_validate_and_log(
-        decrypted_token,
-        token_expiration_time + 300,
-        timestamp,
-        token_expiration_time
-      )
-    end
-
     def decrypted_token
       @decrypted_token ||= SecureToken::Decrypt.call(@secure_token)
+    end
+
+    def validate_decrypted_token
+      !!decrypted_token
     end
 
     private
@@ -96,6 +74,7 @@ module RobustServerSocket
     def token_expiration_time
       RobustServerSocket.configuration.token_expiration_time
     end
+
 
     # Do we need it? It would be useful only if public_key compromised
     # def secure_compare(a, b)

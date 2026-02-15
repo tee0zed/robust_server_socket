@@ -7,6 +7,7 @@ gemspec
 
 gem 'redis', '~> 4.0'
 gem 'connection_pool', '~> 2.2'
+gem 'base64'
 
 group :development, :test do
   gem 'rspec'
