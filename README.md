@@ -4,6 +4,8 @@ Gem для межсервисной авторизации, использует
 
 ### ⚠️ Not Production Tested (yet)
 
+`Not vibecoded`
+
 ## ПОЧЕМУ (WHY)
 
 ### Проблема
@@ -231,61 +233,6 @@ rescue => e
 end
 ```
 
-### Rate Limiting вручную
-
-```ruby
-# Проверка текущего количества попыток
-attempts = RobustServerSocket::RateLimiter.current_attempts('core')
-puts "Core service made #{attempts} requests"
-
-# Сброс счётчика для конкретного клиента
-RobustServerSocket::RateLimiter.reset!('core')
-
-# Проверка с исключением при превышении
-begin
-  RobustServerSocket::RateLimiter.check!('core')
-rescue RobustServerSocket::RateLimiter::RateLimitExceeded => e
-  puts e.message # "Rate limit exceeded for core: 101/100 requests per 60s"
-end
-
-# Проверка без исключения (возвращает false при превышении)
-if RobustServerSocket::RateLimiter.check('core')
-  # Лимит не превышен
-else
-  # Лимит превышен
-end
-```
-
-## 🚦 Rate Limiting (Ограничение частоты запросов)
-
-### Принцип работы
-
-Rate Limiter защищает ваш сервис от перегрузки, ограничивая количество запросов от каждого клиента в определённом временном окне.
-
-**Характеристики:**
-- **Per-client counters**: Отдельный счётчик для каждого сервиса
-- **Sliding window**: Окно сбрасывается автоматически после истечения времени
-- **Атомарность**: Инкремент и проверка выполняются атомарно (Redis LUA script)
-- **Fail-open**: При недоступности Redis запросы пропускаются (не блокируются)
-
-### Мониторинг
-
-```ruby
-# Проверка текущего состояния
-clients = ['core', 'payments', 'notifications']
-clients.each do |client|
-  attempts = RobustServerSocket::RateLimiter.current_attempts(client)
-  max = RobustServerSocket.configuration.rate_limit_max_requests
-  puts "#{client}: #{attempts}/#{max}"
-end
-
-# В метриках (Prometheus, StatsD и т.д.)
-clients.each do |client|
-  attempts = RobustServerSocket::RateLimiter.current_attempts(client)
-  Metrics.gauge("rate_limiter.attempts.#{client}", attempts)
-end
-```
-
 ## ❌ Обработка ошибок
 
 ### Типы исключений
@@ -341,77 +288,6 @@ def rate_limit_response(exception)
 end
 ```
 
-## 💡 Рекомендации по использованию
-
-### 1. Управление ключами
-
-**✅ DO:**
-```ruby
-# Храните ключи в переменных окружения
-c.private_key = ENV['ROBUST_SERVER_PRIVATE_KEY']
-
-# Используйте secrets management (AWS Secrets Manager, Vault, и т.д.)
-c.private_key = Rails.application.credentials.dig(:robust_server, :private_key)
-
-# Генерируйте ключи правильно
-# openssl genrsa -out private_key.pem 2048
-# openssl rsa -in private_key.pem -pubout -out public_key.pem
-```
-
-**❌ DON'T:**
-```ruby
-# НЕ коммитьте ключи в git
-c.private_key = "-----BEGIN PRIVATE KEY-----\nMII..."
-
-# НЕ используйте слабые ключи
-# Минимум RSA-2048, рекомендуется RSA-4096 для высокой безопасности
-```
-
-### 2. Конфигурация Redis
-
-**✅ DO:**
-```ruby
-# Используйте отдельный namespace для каждого окружения
-c.redis_url = ENV.fetch('REDIS_URL', 'redis://localhost:6379/0')
-
-# Настройте connection pool в production
-# В config/initializers/redis.rb
-Redis.current = ConnectionPool.new(size: 5, timeout: 5) do
-  Redis.new(url: ENV['REDIS_URL'], password: ENV['REDIS_PASSWORD'])
-end
-
-# Мониторьте состояние Redis
-# Используйте Redis Sentinel или Cluster для высокой доступности
-```
-
-**❌ DON'T:**
-```ruby
-# НЕ используйте одну БД Redis для всех окружений, используйте отдельную bd redis
-# НЕ игнорируйте ошибки Redis (rate limiter уже fail-open, но логируйте их)
-```
-
-### 5. Whitelist сервисов
-
-```ruby
-# Явно указывайте только необходимые сервисы
-c.allowed_services = %w[core payments] # ✅
-
-# НЕ используйте wildcards или регулярные выражения
-c.allowed_services = %w[*] # ❌ ОПАСНО!
-
-# Синхронизируйте с keychain клиента
-# Server (robust_server_socket):
-c.allowed_services = %w[core]
-
-# Client (robust_client_socket):
-c.keychain = {
-  core: { # ← Должно совпадать
-    base_uri: 'https://core.example.com',
-    public_key: '-----BEGIN PUBLIC KEY-----...'
-  }
-}
-```
-
 ## 🤝 Интеграция с RobustClientSocket
 
 Для полноценной работы необходимо настроить клиентскую часть:
@@ -437,7 +313,6 @@ end
 
 ## 📚 Дополнительные ресурсы
 
-- [BENCHMARK_ANALYSIS.md](BENCHMARK_ANALYSIS.md)
 - [RobustClientSocket documentation](https://github.com/tee0zed/robust_client_socket)
 - [RSA encryption best practices](https://www.openssl.org/docs/)
 - [Redis security guide](https://redis.io/topics/security)
@@ -448,4 +323,4 @@ end
 
 ## 🐛 Баги и предложения
 
-Сообщайте о проблемах через issue tracker вашего репозитория.
+Сообщайте о багах через ишью, или напрямую тг @cruel_mango или email tee0zed@gmail.com

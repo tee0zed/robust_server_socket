@@ -4,6 +4,8 @@ Gem for inter-service authorization, used in pair with RobustClientSocket
 
 ### ⚠️ Not Production Tested (yet)
 
+`Not vibecoded`
+
 ## WHY
 
 ### The Problem
@@ -225,71 +227,6 @@ rescue => e
 end
 ```
 
-### Manual Rate Limiting
-
-```ruby
-# Check current attempt count
-attempts = RobustServerSocket::RateLimiter.current_attempts('core')
-puts "Core service made #{attempts} requests"
-
-# Reset counter for specific client
-RobustServerSocket::RateLimiter.reset!('core')
-
-# Check with exception on exceeded limit
-begin
-  RobustServerSocket::RateLimiter.check!('core')
-rescue RobustServerSocket::RateLimiter::RateLimitExceeded => e
-  puts e.message # "Rate limit exceeded for core: 101/100 requests per 60s"
-end
-
-# Check without exception (returns false when exceeded)
-if RobustServerSocket::RateLimiter.check('core')
-  # Limit not exceeded
-else
-  # Limit exceeded
-end
-```
-
-## 🚦 Rate Limiting (Request Rate Limiting)
-
-### How It Works
-
-Rate Limiter protects your service from overload by limiting the number of requests from each client within a time window.
-
-**Characteristics:**
-- **Per-client counters**: Separate counter for each service
-- **Sliding window**: Window resets automatically after time expires
-- **Atomicity**: Increment and check are performed atomically (Redis LUA script)
-- **Fail-open**: When Redis is unavailable, requests are allowed (not blocked)
-
-### Limit Configuration
-
-```ruby
-RobustServerSocket.configure do |c|
-  # For low-traffic microservices
-  c.rate_limit_max_requests = 50
-  c.rate_limit_window_seconds = 60
-end
-```
-
-### Monitoring
-
-```ruby
-# Check current state
-clients = ['core', 'payments', 'notifications']
-clients.each do |client|
-  attempts = RobustServerSocket::RateLimiter.current_attempts(client)
-  max = RobustServerSocket.configuration.rate_limit_max_requests
-  puts "#{client}: #{attempts}/#{max}"
-end
-
-# In metrics (Prometheus, StatsD, etc.)
-clients.each do |client|
-  attempts = RobustServerSocket::RateLimiter.current_attempts(client)
-  Metrics.gauge("rate_limiter.attempts.#{client}", attempts)
-end
-```
-
 ## ❌ Error Handling
 
 ### Exception Types
@@ -343,32 +280,6 @@ def rate_limit_response(exception)
     retry_after: RobustServerSocket.configuration.rate_limit_window_seconds
   }, status: :too_many_requests
 end
-```
-
-## 💡 Usage Recommendations
-
-### 1. Key Management
-
-**✅ DO:**
-```ruby
-# Store keys in environment variables
-c.private_key = ENV['ROBUST_SERVER_PRIVATE_KEY']
-
-# Use secrets management (AWS Secrets Manager, Vault, etc.)
-c.private_key = Rails.application.credentials.dig(:robust_server, :private_key)
-
-# Generate keys correctly
-# openssl genrsa -out private_key.pem 2048
-# openssl rsa -in private_key.pem -pubout -out public_key.pem
-```
-
-**❌ DON'T:**
-```ruby
-# DON'T commit keys to git
-c.private_key = "-----BEGIN PRIVATE KEY-----\nMII..."
-
-# DON'T use weak keys
-# Minimum RSA-2048, RSA-4096 recommended for high security
 ```
 
 ### 2. Redis Configuration
@@ -690,7 +601,6 @@ end
 
 ## 📚 Additional Resources
 
-- [BENCHMARK_ANALYSIS.md](BENCHMARK_ANALYSIS.md)
 - [RobustClientSocket documentation](../robust_client_socket/README.md)
 - [RSA encryption best practices](https://www.openssl.org/docs/)
 - [Redis security guide](https://redis.io/topics/security)
@@ -701,4 +611,4 @@ See [MIT-LICENSE](MIT-LICENSE) file
 
 ## 🐛 Bugs and Suggestions
 
-Report issues through your repository's issue tracker.
+Report issues to my telegram @cruel_mango or to email tee0zed@gmail.com
