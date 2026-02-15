@@ -154,9 +154,9 @@ RobustServerSocket.load!
 | Параметр                    | Тип | Обязательный | Default                                                                      | Описание                                        |
 |-----------------------------|-----|-------------|------------------------------------------------------------------------------|-------------------------------------------------|
 | `private_key`               | String | ✅ | -                                                                            | Приватный RSA ключ сервиса (RSA-2048 или выше)  |
-| `token_expiration_time`     | Integer | ✅ | -                                                                            | Время жизни токена в секундах                   |
+| `token_expiration_time`     | Integer | ✅ | 10                                                                           | Время жизни токена в секундах                   |
 | `store_used_token_time`     | Integer | ✅ | 600                                                                          | Время жизни токена в блеклисте в секундах       |
-| `allowed_services`          | Array | ✅ | -                                                                            | Список разрешённых сервисов (whitelist)         |
+| `allowed_services`          | Array | ❌ | -                                                                            | Список разрешённых сервисов (whitelist)         |
 | `redis_url`                 | String | ✅ | -                                                                            | URL для подключения к Redis                     |
 | `using_modules`             | Array | ❌ | [:client_auth_protection, :replay_attack_protection, :dos_attack_protection] | Используемые модули                             |
 | `redis_pass`                | String | ❌ | nil                                                                          | Пароль для Redis (если требуется)               |
