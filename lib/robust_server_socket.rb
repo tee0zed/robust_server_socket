@@ -6,6 +6,8 @@ require 'redis'
 require 'connection_pool'
 
 require_relative 'robust_server_socket/configuration'
+require_relative 'robust_server_socket/secure_token/decrypt'
+require_relative 'robust_server_socket/client_token'
 
 module RobustServerSocket
   extend RobustServerSocket::Configuration

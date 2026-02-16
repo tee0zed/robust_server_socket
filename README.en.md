@@ -6,8 +6,6 @@ Gem for inter-service authorization, used in pair with RobustClientSocket
 
 `Not vibecoded`
 
-`Not vibecoded`
-
 ## WHY
 
 ### The Problem
