@@ -91,5 +91,11 @@ module RobustServerSocket
 
       token
     end
+
+    def secure_compare(a, b)
+      return false unless a.bytesize == b.bytesize
+
+      a.bytes.zip(b.bytes).reduce(0) { |diff, (x, y)| diff | (x ^ y) }.zero?
+    end
   end
 end

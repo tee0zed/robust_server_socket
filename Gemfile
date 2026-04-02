@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in payguard.gemspec
+# Specify your gem's dependencies in robust_server_socket.gemspec
 gemspec
 
 gem 'redis', '~> 4.0'
