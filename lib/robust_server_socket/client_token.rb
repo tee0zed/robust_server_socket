@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RobustServerSocket
   class ClientToken
     TOKEN_REGEXP = /\A(.+)_(\d{10,})\z/.freeze
@@ -37,7 +39,7 @@ module RobustServerSocket
     def client
       @client ||= begin
         target = client_name.strip
-        allowed_clients.detect { |allowed| allowed.eql?(target) }
+        allowed_clients.detect { |allowed| secure_compare(allowed, target) }
       end
     end
 
@@ -75,21 +77,22 @@ module RobustServerSocket
       RobustServerSocket.configuration.token_expiration_time
     end
 
-
-    # Do we need it? It would be useful only if public_key compromised
-    # def secure_compare(a, b)
-    #   return false unless a.bytesize == b.bytesize
-    #
-    #   a.bytes.zip(b.bytes).reduce(0) { |diff, (x, y)| diff | (x ^ y) }.zero?
-    # end
-
     def validate_secure_token_input(token)
       # Validate token input to prevent injection
       raise InvalidToken, 'Token must be a string' unless token.is_a?(String)
       raise InvalidToken, 'Token cannot be empty' if token.empty?
       raise InvalidToken, 'Token too long' if token.length > 2048
 
+      # Check for null-byte injection
+      raise InvalidToken, 'Token contains invalid characters' if token.include?("\x00")
+
       token
+    end
+
+    def secure_compare(a, b)
+      return false unless a.bytesize == b.bytesize
+
+      a.bytes.zip(b.bytes).reduce(0) { |diff, (x, y)| diff | (x ^ y) }.zero?
     end
   end
 end

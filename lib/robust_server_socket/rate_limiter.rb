@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RobustServerSocket
   class RateLimiter
     RateLimitExceeded = Class.new(StandardError)
@@ -48,7 +50,8 @@ module RobustServerSocket
         end
       rescue Cacher::RedisConnectionError => e
         handle_redis_error(e, 'increment_attempts')
-        0 # Fail open: allow request if Redis is down
+        # Fail closed: deny request if Redis is down to prevent bypass
+        max_requests + 1
       end
 
       def rate_limit_key(client_name)

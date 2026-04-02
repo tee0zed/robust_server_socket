@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RobustServerSocket
   module Cacher
     class RedisConnectionError < StandardError; end
