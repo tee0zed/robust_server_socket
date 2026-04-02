@@ -1,6 +1,10 @@
+# frozen_string_literal: true
+
 module RobustServerSocket
   module Configuration
     MIN_KEY_SIZE = 2048
+
+    ConfigurationError = Class.new(StandardError)
 
     attr_reader :configuration, :configured
 
@@ -15,6 +19,7 @@ module RobustServerSocket
     def configure
       @configuration ||= ConfigStore.new
       yield(configuration)
+      validate_configuration!
       validate_key_security!
 
       @configured = true
@@ -36,6 +41,13 @@ module RobustServerSocket
     end
 
     private
+
+    def validate_configuration!
+      raise ConfigurationError, 'rate_limit_max_requests must be positive' if configuration.rate_limit_max_requests.to_i <= 0
+      raise ConfigurationError, 'rate_limit_window_seconds must be positive' if configuration.rate_limit_window_seconds.to_i <= 0
+      raise ConfigurationError, 'token_expiration_time must be positive' if configuration.token_expiration_time.to_i <= 0
+      raise ConfigurationError, 'store_used_token_time must be positive' if configuration.store_used_token_time.to_i <= 0
+    end
 
     def validate_key_security!
       key = ::OpenSSL::PKey::RSA.new(configuration.private_key)

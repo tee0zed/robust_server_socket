@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../cacher'
 require_relative '../rate_limiter'
 

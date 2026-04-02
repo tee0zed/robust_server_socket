@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RobustServerSocket
   module SecureToken
     BASE64_REGEXP = /\A[A-Za-z0-9+\/]*={0,2}\z/.freeze
