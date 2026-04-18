@@ -1,23 +1,29 @@
+```
 # Compiled and build artifacts
 *.pyc
 __pycache__/
 *.o
 *.obj
-*.class
 *.so
+*.a
+*.class
 *.dll
 *.exe
 *.out
-*.a
 
 # Dependencies
 .venv/
 venv/
 node_modules/
-.bundle/
-vendor/bundle/
-.jekyll-cache/
-.sass-cache/
+dist/
+build/
+target/
+.gradle/
+.mypy_cache/
+.pytest_cache/
+coverage/
+htmlcov/
+.coverage
 
 # Logs and temp files
 *.log
@@ -36,45 +42,7 @@ vendor/bundle/
 *.swp
 *.swo
 
-# Build directories
-dist/
-build/
-target/
-*.gem
-pkg/
-
-# Cache directories
-.cache/
-.mypy_cache/
-.pytest_cache/
-.coverage
-coverage/
-htmlcov/
-
-# OS generated files
+# System files
 .DS_Store
 Thumbs.db
-
-# Compressed files
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
+```

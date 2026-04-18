@@ -7,9 +7,7 @@ module RobustServerSocket
     InvalidToken = Class.new(StandardError)
 
     def self.validate!(secure_token)
-      new(secure_token).tap do |instance|
-        instance.validate!
-      end
+      new(secure_token).tap(&:validate!)
     end
 
     def initialize(secure_token)

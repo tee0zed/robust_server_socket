@@ -31,9 +31,7 @@ module RobustServerSocket
 
       def reset!(client_name)
         key = rate_limit_key(client_name)
-        Cacher.with_redis do |conn|
-          conn.del(key)
-        end
+        Cacher.with_redis { |conn| conn.del(key) }
       rescue Cacher::RedisConnectionError => e
         handle_redis_error(e, 'reset')
         nil
