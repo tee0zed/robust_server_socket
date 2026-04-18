@@ -55,7 +55,7 @@ module RobustServerSocket
 
       if key_bits < MIN_KEY_SIZE
         raise SecurityError,
-          "RSA key size (#{key_bits} bits) below minimum (#{MIN_KEY_SIZE} bits)"
+              "RSA key size (#{key_bits} bits) below minimum (#{MIN_KEY_SIZE} bits)"
       end
     rescue ::OpenSSL::PKey::RSAError => e
       raise SecurityError, "Invalid private key: #{e.message}"

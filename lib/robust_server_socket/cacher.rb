@@ -35,18 +35,14 @@ module RobustServerSocket
       end
 
       def get(key)
-        redis.with do |conn|
-          conn.get(key)
-        end
+        redis.with { |conn| conn.get(key) }
       rescue ::Redis::BaseConnectionError => e
         handle_redis_error(e, 'get')
         nil
       end
 
       def health_check
-        redis.with do |conn|
-          conn.ping == 'PONG'
-        end
+        redis.with { |conn| conn.ping == 'PONG' }
       rescue ::Redis::BaseConnectionError
         false
       end
