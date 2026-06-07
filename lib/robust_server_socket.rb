@@ -14,17 +14,17 @@ module RobustServerSocket
 
   module_function
 
-  def load!
+  def load! # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
     raise 'You must correctly configure RobustServerSocket first!' unless configured?
 
     configuration.using_modules.each do |mod|
       raise ArgumentError, 'Module must be a Symbol!' unless mod.is_a?(Symbol)
 
       require_relative "robust_server_socket/modules/#{mod}"
-      ClientToken.include eval(mod.to_s.split('_').map(&:capitalize).unshift('Modules::').join)
+      ClientToken.include const_get(mod.to_s.split('_').map(&:capitalize).unshift('Modules::').join)
     end
 
-    ClientToken.class_eval(<<~METHOD)
+    ClientToken.class_eval(<<~METHOD, __FILE__, __LINE__ + 1)
       def modules_checks
         #{(RobustServerSocket.configuration._modules_check_rows.empty? ? ['true'] : RobustServerSocket.configuration._modules_check_rows.map(&:strip)).join(' && ')}
       end

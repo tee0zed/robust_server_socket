@@ -7,9 +7,7 @@ module RobustServerSocket
     InvalidToken = Class.new(StandardError)
 
     def self.validate!(secure_token)
-      new(secure_token).tap do |instance|
-        instance.validate!
-      end
+      new(secure_token).tap(&:validate!)
     end
 
     def initialize(secure_token)
@@ -19,6 +17,7 @@ module RobustServerSocket
 
     def validate!
       raise InvalidToken unless validate_decrypted_token
+
       modules_checks!
     end
 
@@ -39,7 +38,7 @@ module RobustServerSocket
     def client
       @client ||= begin
         target = client_name.strip
-        allowed_clients.detect { |allowed| secure_compare(allowed, target) }
+        allowed_clients.detect { |allowed| allowed.eql?(target) }
       end
     end
 
@@ -69,6 +68,7 @@ module RobustServerSocket
       @split_token ||= begin
         match_data = decrypted_token.to_s.match(TOKEN_REGEXP)
         raise InvalidToken, 'Invalid token format' unless match_data
+
         match_data.captures
       end
     end
@@ -76,6 +76,14 @@ module RobustServerSocket
     def token_expiration_time
       RobustServerSocket.configuration.token_expiration_time
     end
+
+
+    # Do we need it? It would be useful only if public_key compromised
+    # def secure_compare(a, b)
+    #   return false unless a.bytesize == b.bytesize
+    #
+    #   a.bytes.zip(b.bytes).reduce(0) { |diff, (x, y)| diff | (x ^ y) }.zero?
+    # end
 
     def validate_secure_token_input(token)
       # Validate token input to prevent injection
@@ -87,12 +95,6 @@ module RobustServerSocket
       raise InvalidToken, 'Token contains invalid characters' if token.include?("\x00")
 
       token
-    end
-
-    def secure_compare(a, b)
-      return false unless a.bytesize == b.bytesize
-
-      a.bytes.zip(b.bytes).reduce(0) { |diff, (x, y)| diff | (x ^ y) }.zero?
     end
   end
 end

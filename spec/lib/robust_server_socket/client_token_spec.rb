@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require './lib/robust_server_socket/secure_token/decrypt'
 require './lib/robust_server_socket/client_token'
@@ -10,8 +12,7 @@ RSpec.describe RobustServerSocket::ClientToken, stub_configuration: true do
   let(:token) { Base64.strict_encode64(private_key.public_encrypt("#{client}_1000000000", OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING)) }
 
   before do
-    allow(RobustServerSocket::Cacher).to receive_messages(get: nil, incr: 'OK', atomic_validate_and_log: 'ok')
-    allow(Time).to receive_message_chain(:now, :utc, :to_i).and_return(10_010)
+    allow(RobustServerSocket::Cacher).to receive_messages(get: nil, atomic_validate_and_log: 'ok')
     allow(RobustServerSocket::RateLimiter).to receive(:check!).and_return(0)
     allow(RobustServerSocket::RateLimiter).to receive(:check).and_return(1)
   end
@@ -54,7 +55,7 @@ RSpec.describe RobustServerSocket::ClientToken, stub_configuration: true do
     end
 
     context 'when token is not a string' do
-      let(:token) { 12345 }
+      let(:token) { 12_345 }
 
       it 'raises InvalidToken' do
         expect { perform }.to raise_error(RobustServerSocket::ClientToken::InvalidToken, 'Token must be a string')
@@ -334,7 +335,7 @@ RSpec.describe RobustServerSocket::ClientToken, stub_configuration: true do
 
     context 'when rate limit is exceeded' do
       before do
-        allow(RobustServerSocket::RateLimiter).to receive(:check).and_return(nil)
+        allow(RobustServerSocket::RateLimiter).to receive(:check).and_return(false)
         allow(RobustServerSocket::Cacher).to receive(:atomic_validate_and_log).and_return('ok')
       end
 
@@ -390,7 +391,8 @@ RSpec.describe RobustServerSocket::ClientToken, stub_configuration: true do
 
     context 'when atomic validation raises an error' do
       before do
-        allow(RobustServerSocket::Cacher).to receive(:atomic_validate_and_log).and_raise(StandardError.new('Cache error'))
+        allow(RobustServerSocket::Cacher)
+          .to receive(:atomic_validate_and_log).and_raise(StandardError.new('Cache error'))
       end
 
       it 'returns false' do

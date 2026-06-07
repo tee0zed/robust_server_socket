@@ -1,7 +1,9 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require './lib/robust_server_socket/configuration'
 
-RSpec.describe RobustServerSocket::Configuration, stub_configuration: false do # rubocop:disable RSpec/MultipleDescribes
+RSpec.describe RobustServerSocket::Configuration, stub_configuration: false do
   include_context :configuration
 
   let(:dummy_class) { Class.new { extend RobustServerSocket::Configuration } }
@@ -21,14 +23,14 @@ RSpec.describe RobustServerSocket::Configuration, stub_configuration: false do #
       let(:small_key) { OpenSSL::PKey::RSA.generate(1024) }
 
       it 'raises SecurityError' do
-        expect {
+        expect do
           dummy_class.configure do |config|
             config.allowed_services = ['client']
             config.token_expiration_time = 60
             config.redis_url = 'redis://localhost:6379/0'
             config.private_key = small_key.to_pem
           end
-        }.to raise_error(SecurityError, /below minimum/)
+        end.to raise_error(SecurityError, /below minimum/)
       end
     end
   end

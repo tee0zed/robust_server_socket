@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
-require "./lib/version"
+require './lib/version'
 
 Gem::Specification.new do |spec|
-  spec.name = "robust_server_socket"
+  spec.name = 'robust_server_socket'
   spec.version = RobustServerSocket::VERSION
-  spec.authors = ["tee_zed"]
-  spec.email = ["tee0zed@gmail.com"]
-  spec.description = "Robust Server Socket"
-  spec.summary = "Robust Server Socket gem for RobustPro"
-  spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.2.0"
+  spec.authors = ['tee_zed']
+  spec.email = ['tee0zed@gmail.com']
+  spec.description = 'Robust Server Socket'
+  spec.summary = 'Robust Server Socket gem for RobustPro'
+  spec.license = 'MIT'
+  spec.required_ruby_version = '>= 2.7.0'
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
@@ -20,13 +20,13 @@ Gem::Specification.new do |spec|
         f.start_with?(*%w[bin/ test/ spec/ features/ .git .circleci appveyor Gemfile])
     end
   end
-  spec.bindir = "exe"
+  spec.bindir = 'exe'
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
-  spec.require_paths = ["lib"]
-  spec.add_dependency 'rspec'
+  spec.require_paths = ['lib']
+  spec.add_dependency 'hiredis'
   spec.add_dependency 'rake'
   spec.add_dependency 'redis'
-  spec.add_dependency 'hiredis'
+  spec.add_dependency 'rspec'
 
   # Uncomment to register a new dependency of your gem
   # spec.add_dependency "example-gem", "~> 1.0"

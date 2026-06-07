@@ -55,7 +55,7 @@ module RobustServerSocket
 
       if key_bits < MIN_KEY_SIZE
         raise SecurityError,
-          "RSA key size (#{key_bits} bits) below minimum (#{MIN_KEY_SIZE} bits)"
+              "RSA key size (#{key_bits} bits) below minimum (#{MIN_KEY_SIZE} bits)"
       end
     rescue ::OpenSSL::PKey::RSAError => e
       raise SecurityError, "Invalid private key: #{e.message}"
@@ -63,7 +63,8 @@ module RobustServerSocket
   end
 
   class ConfigStore
-    attr_accessor :allowed_services, :private_key, :token_expiration_time, :store_used_token_time, :redis_url, :redis_pass,
+    attr_accessor :allowed_services, :private_key, :token_expiration_time,
+                  :store_used_token_time, :redis_url, :redis_pass,
                   :rate_limit_max_requests, :rate_limit_window_seconds, :using_modules
 
     attr_reader :_modules_check_rows, :_bang_modules_check_rows
@@ -73,12 +74,7 @@ module RobustServerSocket
       @rate_limit_window_seconds = 60
       @store_used_token_time = 600
       @token_expiration_time = 10
-      @using_modules = %i[
-        client_auth_protection
-        dos_attack_protection
-        replay_attack_protection
-      ]
-
+      @using_modules = %i[client_auth_protection rate_limit_protection replay_attack_protection]
       @_modules_check_rows = []
       @_bang_modules_check_rows = []
     end
