@@ -43,10 +43,15 @@ module RobustServerSocket
     private
 
     def validate_configuration!
-      raise ConfigurationError, 'rate_limit_max_requests must be positive' if configuration.rate_limit_max_requests.to_i <= 0
-      raise ConfigurationError, 'rate_limit_window_seconds must be positive' if configuration.rate_limit_window_seconds.to_i <= 0
-      raise ConfigurationError, 'token_expiration_time must be positive' if configuration.token_expiration_time.to_i <= 0
-      raise ConfigurationError, 'store_used_token_time must be positive' if configuration.store_used_token_time.to_i <= 0
+      validate_positive!(:rate_limit_max_requests)
+      validate_positive!(:rate_limit_window_seconds)
+      validate_positive!(:token_expiration_time)
+    end
+
+    def validate_positive!(attr)
+      return if configuration.public_send(attr).to_i.positive?
+
+      raise ConfigurationError, "#{attr} must be positive"
     end
 
     def validate_key_security!
@@ -64,7 +69,7 @@ module RobustServerSocket
 
   class ConfigStore
     attr_accessor :allowed_services, :private_key, :token_expiration_time,
-                  :store_used_token_time, :redis_url, :redis_pass,
+                  :redis_url, :redis_pass,
                   :rate_limit_max_requests, :rate_limit_window_seconds, :using_modules
 
     attr_reader :_modules_check_rows, :_bang_modules_check_rows
@@ -72,7 +77,6 @@ module RobustServerSocket
     def initialize
       @rate_limit_max_requests = 100
       @rate_limit_window_seconds = 60
-      @store_used_token_time = 600
       @token_expiration_time = 10
       @using_modules = %i[client_auth_protection rate_limit_protection replay_attack_protection]
       @_modules_check_rows = []

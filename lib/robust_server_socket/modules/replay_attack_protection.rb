@@ -23,7 +23,7 @@ module RobustServerSocket
       def atomic_validate_and_log_token
         Cacher.atomic_validate_and_log(
           decrypted_token,
-          store_used_token_time, # window for storing used token
+          store_used_token_time,
           timestamp,
           token_expiration_time
         ) == 'ok'
@@ -41,7 +41,7 @@ module RobustServerSocket
       end
 
       def store_used_token_time
-        RobustServerSocket.configuration.store_used_token_time
+        RobustServerSocket.configuration.token_expiration_time + Cacher::CLOCK_SKEW_MS / 1000
       end
     end
   end

@@ -16,13 +16,13 @@ module RobustServerSocket
     end
 
     def validate!
-      raise InvalidToken unless validate_decrypted_token
-
       modules_checks!
+    rescue SecureToken::InvalidToken => e
+      raise InvalidToken, e.message
     end
 
     def valid?
-      validate_decrypted_token && modules_checks
+      modules_checks
     rescue StandardError
       false
     end
@@ -44,10 +44,6 @@ module RobustServerSocket
 
     def decrypted_token
       @decrypted_token ||= SecureToken::Decrypt.call(@secure_token)
-    end
-
-    def validate_decrypted_token
-      !!decrypted_token
     end
 
     private
@@ -76,7 +72,6 @@ module RobustServerSocket
     def token_expiration_time
       RobustServerSocket.configuration.token_expiration_time
     end
-
 
     # Do we need it? It would be useful only if public_key compromised
     # def secure_compare(a, b)

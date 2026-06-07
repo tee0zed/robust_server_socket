@@ -246,14 +246,6 @@ RSpec.describe RobustServerSocket::ClientToken, stub_configuration: true do
     end
 
     context 'validation order' do
-      it 'validates decrypted_token before client' do
-        allow(instance).to receive(:decrypted_token).and_return(nil)
-        allow(instance).to receive(:client).and_call_original
-
-        expect { perform }.to raise_error(RobustServerSocket::ClientToken::InvalidToken)
-        expect(instance).not_to have_received(:client)
-      end
-
       it 'validates client before rate limiting' do
         allow(instance).to receive(:client).and_return(nil)
 
