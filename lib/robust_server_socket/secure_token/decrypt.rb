@@ -2,7 +2,7 @@
 
 module RobustServerSocket
   module SecureToken
-    BASE64_REGEXP = %r{\A[A-Za-z0-9+/]*={0,2}\z}.freeze
+    BASE64_REGEXP = %r{\A[A-Za-z0-9+/]+={0,2}\z}.freeze
     InvalidToken = Class.new(StandardError)
 
     module Decrypt
