@@ -155,7 +155,7 @@ RobustServerSocket.load!
 |-----------------------------|---------|-------------|-------------------------------------------------------------------------------------|-------------------------------------------------|
 | `private_key`               | String  | ✅          | —                                                                                   | Приватный RSA ключ сервиса (RSA-2048 или выше)  |
 | `token_expiration_time`     | Integer | ✅          | 10                                                                                  | Время жизни токена в секундах                   |
-| `allowed_services`          | Array   | ❌          | —                                                                                   | Список разрешённых сервисов (whitelist)         |
+| `allowed_services`          | Array   | ✅          | —                                                                                   | Список разрешённых сервисов (whitelist)         |
 | `redis_url`                 | String  | ✅          | —                                                                                   | URL для подключения к Redis                     |
 | `redis_pass`                | String  | ❌          | nil                                                                                 | Пароль для Redis                                |
 | `using_modules`             | Array   | ❌          | `[:client_auth_protection, :rate_limit_protection, :replay_attack_protection]`      | Используемые модули                             |
@@ -279,6 +279,10 @@ RobustServerSocket.configure do |c|
   c.private_key = '-----BEGIN PRIVATE KEY-----...'
 end
 ```
+
+## 🗺️ TODO
+
+- [ ] **Per-client ключи для rate limiter** — настраиваемые индивидуальные лимиты для каждого `client_name` вместо единого глобального лимита
 
 ## 📚 Дополнительные ресурсы
 
