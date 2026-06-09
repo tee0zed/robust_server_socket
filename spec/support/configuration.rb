@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require './lib/robust_server_socket/'
 
 RSpec.shared_context :configuration do
@@ -13,7 +15,7 @@ RSpec.shared_context :configuration do
       store.allowed_services = [client]
       store.rate_limit_max_requests = 100
       store.rate_limit_window_seconds = 60
-      store.using_modules = %i[client_auth_protection dos_attack_protection replay_attack_protection]
+      store.using_modules = %i[client_auth_protection rate_limit_protection replay_attack_protection]
     end
   end
 end

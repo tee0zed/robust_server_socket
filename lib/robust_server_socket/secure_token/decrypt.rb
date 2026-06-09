@@ -2,21 +2,17 @@
 
 module RobustServerSocket
   module SecureToken
-    BASE64_REGEXP = /\A[A-Za-z0-9+\/]*={0,2}\z/.freeze
+    BASE64_REGEXP = %r{\A[A-Za-z0-9+/]+={0,2}\z}.freeze
     InvalidToken = Class.new(StandardError)
 
     module Decrypt
       class << self
         def call(token)
-          unless token.is_a?(String) && token.match?(BASE64_REGEXP)
-            raise InvalidToken, 'Invalid token format'
-          end
+          raise InvalidToken, 'Invalid token format' unless token.is_a?(String) && token.match?(BASE64_REGEXP)
 
           decoded_token = ::Base64.strict_decode64(token)
 
-          if decoded_token.bytesize > 1024
-            raise InvalidToken, 'Token too large'
-          end
+          raise InvalidToken, 'Token too large' if decoded_token.bytesize > 1024
 
           private_key.private_decrypt(decoded_token, OpenSSL::PKey::RSA::PKCS1_OAEP_PADDING).force_encoding('UTF-8')
         rescue ::OpenSSL::PKey::RSAError, ArgumentError

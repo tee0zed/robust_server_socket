@@ -6,27 +6,15 @@ module RobustServerSocket
 
     class << self
       def check!(client_name)
-        unless (attempts = check(client_name))
-          actual_attempts = current_attempts(client_name)
+        return if check(client_name)
 
-          raise RateLimitExceeded, "Rate limit exceeded for #{client_name}: #{actual_attempts}/#{max_requests} requests per #{window_seconds}s"
-        end
-
-        attempts
+        raise RateLimitExceeded,
+              "Rate limit exceeded for #{client_name}: max #{max_requests} per #{window_seconds}s"
       end
 
       def check(client_name)
-        key = rate_limit_key(client_name)
-        attempts = increment_attempts(key)
-
-        return false if attempts > max_requests
-
-        attempts
-      end
-
-      def current_attempts(client_name)
-        key = rate_limit_key(client_name)
-        Cacher.get(key).to_i
+        attempts = record_attempt(client_name)
+        attempts <= max_requests
       end
 
       def reset!(client_name)
@@ -41,17 +29,11 @@ module RobustServerSocket
 
       private
 
-      def increment_attempts(key)
-        Cacher.with_redis do |conn|
-          attempts = conn.incr(key)
-          # Set expiration only on first attempt to ensure atomic window
-          conn.expire(key, window_seconds) if attempts == 1
-          attempts
-        end
+      def record_attempt(client_name)
+        Cacher.incr_sliding_window_count(rate_limit_key(client_name), window_seconds)
       rescue Cacher::RedisConnectionError => e
-        handle_redis_error(e, 'increment_attempts')
-        # Fail closed: deny request if Redis is down to prevent bypass
-        max_requests + 1
+        handle_redis_error(e, 'record_attempt')
+        0
       end
 
       def rate_limit_key(client_name)

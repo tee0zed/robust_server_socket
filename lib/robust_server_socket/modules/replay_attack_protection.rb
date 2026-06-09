@@ -15,28 +15,15 @@ module RobustServerSocket
 
       def atomic_validate_and_log_token!
         result = Cacher.atomic_validate_and_log(
-          decrypted_token,
-          store_used_token_time,
-          timestamp,
-          token_expiration_time
+          decrypted_token, store_used_token_time, timestamp, token_expiration_time
         )
-
-        case result
-          when 'ok'
-            true
-          when 'stale'
-            raise StaleToken
-          when 'used'
-            raise UsedToken
-          else
-            raise StandardError, "Unexpected result: #{result}"
-          end
+        handle_validation_result!(result)
       end
 
       def atomic_validate_and_log_token
         Cacher.atomic_validate_and_log(
           decrypted_token,
-          store_used_token_time, # window for storing used token
+          store_used_token_time,
           timestamp,
           token_expiration_time
         ) == 'ok'
@@ -44,8 +31,17 @@ module RobustServerSocket
 
       private
 
+      def handle_validation_result!(result)
+        case result
+        when 'ok' then true
+        when 'stale' then raise StaleToken
+        when 'used' then raise UsedToken
+        else raise StandardError, "Unexpected result: #{result}"
+        end
+      end
+
       def store_used_token_time
-        RobustServerSocket.configuration.store_used_token_time
+        RobustServerSocket.configuration.token_expiration_time + Cacher::CLOCK_SKEW_MS / 1000
       end
     end
   end

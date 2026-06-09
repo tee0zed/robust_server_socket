@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 require './lib/robust_server_socket/cacher'
@@ -8,6 +10,7 @@ RSpec.describe RobustServerSocket::Cacher, stub_configuration: true do
   let(:connection_pool) { instance_double(ConnectionPool) }
 
   before do
+    described_class.clear_redis_pool_cache!
     allow(ConnectionPool).to receive(:new).and_return(connection_pool)
     allow(connection_pool).to receive(:with).and_yield(redis_mock)
   end
@@ -19,7 +22,7 @@ RSpec.describe RobustServerSocket::Cacher, stub_configuration: true do
     let(:expiration_time) { 300 }
 
     before do
-      allow(Time).to receive_message_chain(:now, :utc, :to_i).and_return(10_100)
+      allow(Process).to receive(:clock_gettime).with(Process::CLOCK_REALTIME, :millisecond).and_return(10_100)
     end
 
     context 'when validation succeeds' do
@@ -54,19 +57,23 @@ RSpec.describe RobustServerSocket::Cacher, stub_configuration: true do
     end
   end
 
-  describe '.incr' do
-    let(:key) { 'counter_key' }
+  describe '.incr_sliding_window_count' do
+    let(:key) { 'rate_limit:client' }
+    let(:window_seconds) { 60 }
+    let(:now_ns) { 1_000_000_000_000 }
 
     before do
-      allow(RobustServerSocket.configuration).to receive(:token_expiration_time).and_return(300)
+      allow(Process).to receive(:clock_gettime).with(Process::CLOCK_REALTIME, :nanosecond).and_return(now_ns)
     end
 
-    it 'increments and sets expiration using configured TTL' do
-      expect(redis_mock).to receive(:pipelined).and_yield(redis_mock)
-      expect(redis_mock).to receive(:incrby).with(key, 1)
-      expect(redis_mock).to receive(:expire).with(key, 310) # token_expiration_time + 10
+    it 'returns count from redis' do
+      expect(redis_mock).to receive(:eval).with(
+        anything,
+        keys: [key],
+        argv: [now_ns, window_seconds * 1_000_000_000, window_seconds, now_ns.to_s]
+      ).and_return(3)
 
-      described_class.incr(key)
+      expect(described_class.incr_sliding_window_count(key, window_seconds)).to eq(3)
     end
   end
 

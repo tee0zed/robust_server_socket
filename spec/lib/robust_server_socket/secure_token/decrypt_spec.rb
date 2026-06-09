@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 require './lib/robust_server_socket/secure_token/decrypt'
 
