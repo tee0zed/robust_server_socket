@@ -166,7 +166,7 @@ RobustServerSocket.load!
 
 ### Совместимость с RobustClientSocket
 
-Токен содержит таймстамп в **миллисекундах**. RobustClientSocket начиная с версии X.X должен генерировать:
+Токен содержит таймстамп в **миллисекундах**. RobustClientSocket начиная с версии 0.5.3 должен генерировать:
 
 ```ruby
 Process.clock_gettime(Process::CLOCK_REALTIME, :millisecond)

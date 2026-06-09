@@ -171,7 +171,7 @@ RobustServerSocket.load!
 
 ### Compatibility with RobustClientSocket
 
-The token contains a timestamp in **milliseconds**. RobustClientSocket starting from version X.X must generate:
+The token contains a timestamp in **milliseconds**. RobustClientSocket starting from version 0.5.3 must generate:
 
 ```ruby
 Process.clock_gettime(Process::CLOCK_REALTIME, :millisecond)
